@@ -92,7 +92,7 @@ namespace xarm_control
 		xarm.setMode(XARM_MODE::POSE);
 	}
 
-	void XArmHW::pos_fb_cb(const sensor_msgs::JointState::ConstPtr& data)
+	void XArmHW::pos_fb_cb(const sensor_msgs::msg::JointState::ConstPtr& data)
 	{
 		for(int j=0; j<dof_; j++)
 		{
@@ -102,7 +102,7 @@ namespace xarm_control
 		}
 	}
 
-	void XArmHW::state_fb_cb(const xarm_msgs::RobotMsg::ConstPtr& data)
+	void XArmHW::state_fb_cb(const xarm_msgs::srv::RobotMsg::ConstPtr& data)
 	{
 		curr_mode = data->mode;
 		curr_state = data->state;

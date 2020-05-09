@@ -11,17 +11,17 @@ namespace xarm_api{
 void XArmROSClient::init(ros::NodeHandle& nh)
 {   
     nh_ = nh;
-	motion_ctrl_client_ = nh_.serviceClient<xarm_msgs::SetAxis>("motion_ctrl");
-	set_mode_client_ = nh_.serviceClient<xarm_msgs::SetInt16>("set_mode");
-	set_state_client_ = nh_.serviceClient<xarm_msgs::SetInt16>("set_state");
-    set_tcp_offset_client_ = nh_.serviceClient<xarm_msgs::TCPOffset>("set_tcp_offset");
-    set_load_client_ = nh_.serviceClient<xarm_msgs::SetLoad>("set_load");
-  	go_home_client_ = nh_.serviceClient<xarm_msgs::Move>("go_home");
-	move_lineb_client_ = nh_.serviceClient<xarm_msgs::Move>("move_lineb");
-    move_line_client_ = nh_.serviceClient<xarm_msgs::Move>("move_line");
-    move_joint_client_ = nh_.serviceClient<xarm_msgs::Move>("move_joint");
-	move_servoj_client_ = nh_.serviceClient<xarm_msgs::Move>("move_servoj",true); // persistent connection for servoj
-    move_servo_cart_client_ = nh_.serviceClient<xarm_msgs::Move>("move_servo_cart",true); // persistent connection for servo_cartesian
+	motion_ctrl_client_ = nh_.serviceClient<xarm_msgs::srv::SetAxis>("motion_ctrl");
+	set_mode_client_ = nh_.serviceClient<xarm_msgs::srv::SetInt16>("set_mode");
+	set_state_client_ = nh_.serviceClient<xarm_msgs::srv::SetInt16>("set_state");
+    set_tcp_offset_client_ = nh_.serviceClient<xarm_msgs::srv::TCPOffset>("set_tcp_offset");
+    set_load_client_ = nh_.serviceClient<xarm_msgs::srv::SetLoad>("set_load");
+  	go_home_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("go_home");
+	move_lineb_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("move_lineb");
+    move_line_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("move_line");
+    move_joint_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("move_joint");
+	move_servoj_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("move_servoj",true); // persistent connection for servoj
+    move_servo_cart_client_ = nh_.serviceClient<xarm_msgs::srv::Move>("move_servo_cart",true); // persistent connection for servo_cartesian
 }
 
 int XArmROSClient::motionEnable(short en)

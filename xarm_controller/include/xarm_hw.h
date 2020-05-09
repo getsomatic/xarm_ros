@@ -78,8 +78,8 @@ namespace xarm_control
 		ros::Subscriber pos_sub_, vel_sub_, effort_sub_, state_sub_;
 
 		void clientInit(const std::string& robot_ip, ros::NodeHandle &root_nh);
-		void pos_fb_cb(const sensor_msgs::JointState::ConstPtr& data);
-		void state_fb_cb(const xarm_msgs::RobotMsg::ConstPtr& data);
+		void pos_fb_cb(const sensor_msgs::msg::JointState::ConstPtr& data);
+		void state_fb_cb(const xarm_msgs::srv::RobotMsg::ConstPtr& data);
 
 	};
 

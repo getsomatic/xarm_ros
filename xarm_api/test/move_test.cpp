@@ -7,7 +7,7 @@
 #include "ros/ros.h"
 #include <xarm_driver.h>
 
-int go_home_test(xarm_msgs::Move srv, ros::ServiceClient client)
+int go_home_test(xarm_msgs::srv::Move srv, ros::ServiceClient client)
 {
     srv.request.mvvelo = 20.0 / 57.0;
     srv.request.mvacc = 1000;
@@ -24,7 +24,7 @@ int go_home_test(xarm_msgs::Move srv, ros::ServiceClient client)
     return 0;
 }
 
-int servoj_test(xarm_msgs::Move srv, ros::ServiceClient client)
+int servoj_test(xarm_msgs::srv::Move srv, ros::ServiceClient client)
 {
     std::vector<float> joint[2] = {{0, 0, 0, 0, 0, 0, 0}, 
                                  {0, -0.3, 0, 0, 0, 0, 0}};
@@ -49,7 +49,7 @@ int servoj_test(xarm_msgs::Move srv, ros::ServiceClient client)
     return 0;
 }
 
-int move_lineb_test(xarm_msgs::Move srv, ros::ServiceClient client)
+int move_lineb_test(xarm_msgs::srv::Move srv, ros::ServiceClient client)
 {
 	std::vector<float> pose[5] = {  {300, 0, 100, -3.14, 0, 0},
                                     {300, 100, 100, -3.14, 0, 0},
@@ -81,16 +81,16 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "xarm_move_test");
 	ros::NodeHandle nh;
-	ros::ServiceClient motion_ctrl_client_ = nh.serviceClient<xarm_msgs::SetAxis>("motion_ctrl");
-	ros::ServiceClient set_mode_client_ = nh.serviceClient<xarm_msgs::SetInt16>("set_mode");
-	ros::ServiceClient set_state_client_ = nh.serviceClient<xarm_msgs::SetInt16>("set_state");
-  	ros::ServiceClient go_home_client_ = nh.serviceClient<xarm_msgs::Move>("go_home");
-	ros::ServiceClient move_lineb_client_ = nh.serviceClient<xarm_msgs::Move>("move_lineb");
-	ros::ServiceClient move_servoj_client_ = nh.serviceClient<xarm_msgs::Move>("move_servoj");
+	ros::ServiceClient motion_ctrl_client_ = nh.serviceClient<xarm_msgs::srv::SetAxis>("motion_ctrl");
+	ros::ServiceClient set_mode_client_ = nh.serviceClient<xarm_msgs::srv::SetInt16>("set_mode");
+	ros::ServiceClient set_state_client_ = nh.serviceClient<xarm_msgs::srv::SetInt16>("set_state");
+  	ros::ServiceClient go_home_client_ = nh.serviceClient<xarm_msgs::srv::Move>("go_home");
+	ros::ServiceClient move_lineb_client_ = nh.serviceClient<xarm_msgs::srv::Move>("move_lineb");
+	ros::ServiceClient move_servoj_client_ = nh.serviceClient<xarm_msgs::srv::Move>("move_servoj");
 
-    xarm_msgs::SetAxis set_axis_srv_;
-    xarm_msgs::SetInt16 set_int16_srv_;
-    xarm_msgs::Move move_srv_;
+    xarm_msgs::srv::SetAxis set_axis_srv_;
+    xarm_msgs::srv::SetInt16 set_int16_srv_;
+    xarm_msgs::srv::Move move_srv_;
     
     set_axis_srv_.request.id = 1;
     set_axis_srv_.request.data = 1;

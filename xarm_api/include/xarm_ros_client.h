@@ -1,7 +1,7 @@
 #ifndef __XARM_ROS_CLIENT_H__
 #define __XARM_ROS_CLIENT_H__
 
-#include "ros/ros.h"
+#include <rclcpp/rclcpp.hpp>
 #include <xarm_driver.h>
 
 namespace xarm_api{
@@ -38,13 +38,13 @@ private:
 	ros::ServiceClient set_tcp_offset_client_;
 	ros::ServiceClient set_load_client_;
 
-    xarm_msgs::SetAxis set_axis_srv_;
-    xarm_msgs::SetInt16 set_int16_srv_;
-    xarm_msgs::TCPOffset offset_srv_;
-    xarm_msgs::SetLoad set_load_srv_;
-    xarm_msgs::Move move_srv_;
-    xarm_msgs::Move servoj_msg_;
-    xarm_msgs::Move servo_cart_msg_;
+    xarm_msgs::srv::SetAxis set_axis_srv_;
+    xarm_msgs::srv::SetInt16 set_int16_srv_;
+    xarm_msgs::srv::TCPOffset offset_srv_;
+    xarm_msgs::srv::SetLoad set_load_srv_;
+    xarm_msgs::srv::Move move_srv_;
+    xarm_msgs::srv::Move servoj_msg_;
+    xarm_msgs::srv::Move servo_cart_msg_;
 
     ros::NodeHandle nh_;
 };

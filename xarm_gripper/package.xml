@@ -1,4 +1,4 @@
-<package>
+<package format="3">
   <name>xarm_gripper</name>
   <version>1.0.0</version>
   <description>
@@ -13,7 +13,7 @@
 
   <depend>robot_state_publisher</depend>
   <depend>rviz2</depend>
-  <depend>joint_state_publisher</depend>
+<!--  <depend>joint_state_publisher</depend>-->
   <depend>gazebo</depend>
 
   <test_depend>ament_lint_auto</test_depend>
@@ -23,5 +23,4 @@
       <build_type>ament_cmake</build_type>
       <architecture_independent />
     </export>
-
 </package>

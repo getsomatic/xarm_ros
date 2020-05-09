@@ -1,9 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(xarm_gripper)
 
 find_package(ament_cmake REQUIRED)
-
-find_package(roslaunch)
+find_package(robot_state_publisher REQUIRED)
+find_package(rviz2 REQUIRED)
+find_package(gazebo REQUIRED)
+# find_package(joint_state_publisher REQUIRED)
 
 install(
 		DIRECTORY

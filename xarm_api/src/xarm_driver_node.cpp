@@ -127,9 +127,9 @@ class XarmRTConnection
         ros::Time now;
         SocketPort *arm_report;
         ReportDataNorm norm_data;
-        sensor_msgs::JointState js_msg;
+        sensor_msgs::msg::JointState js_msg;
         xarm_api::XARMDriver xarm_driver;
-        xarm_msgs::RobotMsg rm_msg;
+        xarm_msgs::srv::RobotMsg rm_msg;
 
         int joint_num_;
         std::vector<std::string> joint_name_;
@@ -138,14 +138,19 @@ class XarmRTConnection
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "xarm_driver_node");
+    rclcpp::init(argc, argv);
+
+    auto xarm_driver = std::make_shared<xarm_api::XARMDriver>();
+    RCLCPP_INFO(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
+
+    rclcpp::spin(xarm_driver);
+    rclcpp::shutdown();
+
+    ////////////////////////
     
     // with namespace (ns) specified in the calling launch file (xarm by default)
-    ros::NodeHandle n;
 
-    xarm_api::XARMDriver driver;
-    ROS_INFO("start xarm driver");
-
+    // TODO: Change IP
     std::string robot_ip = "192.168.1.121";
     if (!n.hasParam("xarm_robot_ip"))
     {
@@ -163,6 +168,8 @@ int main(int argc, char **argv)
 
     // ros::spin();
     ros::waitForShutdown();
+
+
 
     printf("end");
     
