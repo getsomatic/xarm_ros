@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(xarm_msgs)
 
 find_package(ament_cmake REQUIRED)
@@ -22,19 +22,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "srv/SetAxis.srv"
         "srv/SetDigitalIO.srv"
         "srv/SetInt16.srv"
-        "srv/SetDigitalIO.srv"
-        "srv/SetInt16.srv"
         "srv/SetLoad.srv"
         "srv/TCPOffset.srv"
+
         DEPENDENCIES
         builtin_interfaces
         std_msgs
-        geometry_msgs)
-
-include_directories(
- include
-  ${catkin_INCLUDE_DIRS}
-)
+        )
 
 ament_export_dependencies(rosidl_default_runtime)
 ament_package()

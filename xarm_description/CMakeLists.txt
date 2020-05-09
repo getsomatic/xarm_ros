@@ -1,14 +1,14 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(xarm_description)
 
 find_package(ament_cmake REQUIRED)
 
-catkin_package(
-
-)
-
-include_directories(
-  ${catkin_INCLUDE_DIRS}
+install(
+        DIRECTORY
+        urdf
+        launch
+        meshes
+        DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()
