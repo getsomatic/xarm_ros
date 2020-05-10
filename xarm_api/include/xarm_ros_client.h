@@ -3,15 +3,17 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <xarm_driver.h>
+#include <memory>
+#include <chrono>
+#include <functional>
 
 namespace xarm_api{
 
-class XArmROSClient
+class XArmROSClient : public rclcpp::Node
 {
 public:
-	XArmROSClient(){};
-	void init(ros::NodeHandle& nh);
-	~XArmROSClient(){};
+	XArmROSClient();
+	~XArmROSClient()= default;
 
 	int motionEnable(short en);
 	int setState(short state);
@@ -26,27 +28,27 @@ public:
 	int moveLineB(int num_of_pnts, const std::vector<float> cart_cmds[], float cart_vel_mm, float cart_acc_mm=500, float radii=0);
 
 private:
-	ros::ServiceClient motion_ctrl_client_;
-	ros::ServiceClient set_mode_client_;
-	ros::ServiceClient set_state_client_;
-  	ros::ServiceClient go_home_client_;
-	ros::ServiceClient move_lineb_client_;
-	ros::ServiceClient move_servoj_client_;
-	ros::ServiceClient move_servo_cart_client_;
-	ros::ServiceClient move_line_client_;
-	ros::ServiceClient move_joint_client_;
-	ros::ServiceClient set_tcp_offset_client_;
-	ros::ServiceClient set_load_client_;
+	rclcpp::Client<xarm_msgs::srv::SetAxis>::SharedPtr motion_ctrl_client_;
+	rclcpp::Client<xarm_msgs::srv::SetInt16>::SharedPtr set_mode_client_;
+	rclcpp::Client<xarm_msgs::srv::SetInt16>::SharedPtr set_state_client_;
+  	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr go_home_client_;
+	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr move_lineb_client_;
+	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr move_servoj_client_;
+	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr move_servo_cart_client_;
+	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr move_line_client_;
+	rclcpp::Client<xarm_msgs::srv::Move>::SharedPtr move_joint_client_;
+	rclcpp::Client<xarm_msgs::srv::TCPOffset>::SharedPtr set_tcp_offset_client_;
+	rclcpp::Client<xarm_msgs::srv::SetLoad>::SharedPtr set_load_client_;
 
-    xarm_msgs::srv::SetAxis set_axis_srv_;
-    xarm_msgs::srv::SetInt16 set_int16_srv_;
-    xarm_msgs::srv::TCPOffset offset_srv_;
-    xarm_msgs::srv::SetLoad set_load_srv_;
-    xarm_msgs::srv::Move move_srv_;
-    xarm_msgs::srv::Move servoj_msg_;
-    xarm_msgs::srv::Move servo_cart_msg_;
+    xarm_msgs::srv::SetAxis::Request::SharedPtr set_axis_srv_;
+    xarm_msgs::srv::SetInt16::Request::SharedPtr set_int16_srv_;
+    xarm_msgs::srv::TCPOffset::Request::SharedPtr offset_srv_;
+    xarm_msgs::srv::SetLoad::Request::SharedPtr set_load_srv_;
+    xarm_msgs::srv::Move::Request::SharedPtr move_srv_;
+    xarm_msgs::srv::Move::Request::SharedPtr servoj_msg_;
+    xarm_msgs::srv::Move::Request::SharedPtr servo_cart_msg_;
 
-    ros::NodeHandle nh_;
+    rclcpp::Logger log_ = rclcpp::get_logger("XArmROSClient");
 };
 
 }

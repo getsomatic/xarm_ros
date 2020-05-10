@@ -22,6 +22,10 @@
 #include "xarm/connect.h"
 #include "xarm/report_data.h"
 
+#include <memory>
+#include <chrono>
+#include <functional>
+
 namespace xarm_api
 {
 class XARMDriver : public rclcpp::Node

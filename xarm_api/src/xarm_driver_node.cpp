@@ -8,22 +8,49 @@
 #include <xarm/linux/thread.h>
 #include "xarm/connect.h"
 #include "xarm/report_data.h"
+#include <memory>
+#include <chrono>
+#include <functional>
 
-class XarmRTConnection
+class XarmRTConnection : public rclcpp::Node
 {
     public:
-        XarmRTConnection(ros::NodeHandle& root_nh, char *server_ip, xarm_api::XARMDriver &drv)
-        {   
-            root_nh.getParam("DOF", joint_num_);
-            root_nh.getParam("joint_names", joint_name_);
+        XarmRTConnection(std::shared_ptr<xarm_api::XARMDriver> drv) : Node("XarmRTConnection")
+        {
+            char server_ip[20]={0};
+            std::string robot_ip = "192.168.1.121";
+            this->declare_parameter("xarm_robot_ip");
+            if (!this->get_parameter("xarm_robot_ip", robot_ip)) {
+                RCLCPP_ERROR(log_, "Failed to get parameter xarm_robot_ip. Shutting down...");
+                assert(false);
+            } else {
+                RCLCPP_INFO(log_, "Got IP %s", robot_ip.c_str());
+            }
+            strcpy(server_ip, robot_ip.c_str());
+
+            this->declare_parameter("DOF");
+            if (!this->get_parameter("DOF", joint_num_)) {
+                RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
+                assert(false);
+            } else {
+                RCLCPP_INFO(log_, "DOF set to %d", joint_num_);
+            }
+
+            this->declare_parameter("joint_names");
+            if (!this->get_parameter("joint_names", joint_name_)) {
+                RCLCPP_ERROR(log_, "Failed to get parameter joint_names. Shutting down...");
+                assert(false);
+            } else {
+                RCLCPP_INFO(log_, "Got joint names successfully");
+            }
             ip = server_ip;
             xarm_driver = drv;
-            xarm_driver.XARMDriverInit(root_nh, server_ip);
+            xarm_driver->XARMDriverInit(server_ip);
             thread_id = thread_init(thread_proc, (void *)this);
 
         }
 
-        void thread_run(void)
+    [[noreturn]] void thread_run(void)
         {
             int ret;
             int err_num;
@@ -32,20 +59,20 @@ class XarmRTConnection
             int first_cycle = 1;
             double d, prev_angle[joint_num_];
 
-            ros::Rate r(REPORT_RATE_HZ); // 50Hz
+            rclcpp::Rate r(REPORT_RATE_HZ); // 50Hz
 
             while(true)
             {
                 // usleep(5000);
-                ret = xarm_driver.get_frame();
+                ret = xarm_driver->get_frame();
                 if (ret != 0) continue;
 
-                ret = xarm_driver.get_rich_data(norm_data);
+                ret = xarm_driver->get_rich_data(norm_data);
                 if (ret == 0)
                 {
                     rxcnt++;
 
-                    now = ros::Time::now();
+                    now = clock_.now();
                     js_msg.header.stamp = now;
                     js_msg.header.frame_id = "real-time data";
                     js_msg.name.resize(joint_num_);
@@ -73,7 +100,7 @@ class XarmRTConnection
                         prev_angle[i] = d;
                     }
                     
-                    xarm_driver.pub_joint_state(js_msg);
+                    xarm_driver->pub_joint_state(js_msg);
 
                     rm_msg.state = norm_data.runing_;
                     rm_msg.mode = norm_data.mode_;
@@ -99,7 +126,7 @@ class XarmRTConnection
                         rm_msg.pose[i] = norm_data.pose_[i];
                         rm_msg.offset[i] = norm_data.tcp_offset_[i];
                     }
-                    xarm_driver.pub_robot_msg(rm_msg);
+                    xarm_driver->pub_robot_msg(rm_msg);
 
                     // publish io state: This line may interfere with servoj execution
                     // xarm_driver.pub_io_state();
@@ -124,16 +151,18 @@ class XarmRTConnection
     public:
         pthread_t thread_id;
         char *ip;
-        ros::Time now;
+        rclcpp::Time now;
         SocketPort *arm_report;
         ReportDataNorm norm_data;
         sensor_msgs::msg::JointState js_msg;
-        xarm_api::XARMDriver xarm_driver;
-        xarm_msgs::srv::RobotMsg rm_msg;
+        std::shared_ptr<xarm_api::XARMDriver> xarm_driver;
+        xarm_msgs::msg::RobotMsg rm_msg;
 
         int joint_num_;
         std::vector<std::string> joint_name_;
         constexpr static const double REPORT_RATE_HZ = 10; /* 10Hz, same with norm_report frequency */
+        rclcpp::Clock clock_;
+        rclcpp::Logger log_ = rclcpp::get_logger("XarmRTConnection");
 };
 
 int main(int argc, char **argv)
@@ -143,35 +172,9 @@ int main(int argc, char **argv)
     auto xarm_driver = std::make_shared<xarm_api::XARMDriver>();
     RCLCPP_INFO(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
 
+    XarmRTConnection rt_connect(xarm_driver);
+
     rclcpp::spin(xarm_driver);
     rclcpp::shutdown();
-
-    ////////////////////////
-    
-    // with namespace (ns) specified in the calling launch file (xarm by default)
-
-    // TODO: Change IP
-    std::string robot_ip = "192.168.1.121";
-    if (!n.hasParam("xarm_robot_ip"))
-    {
-        ROS_ERROR("No param named 'xarm_robot_ip'");
-        ROS_ERROR("Use default robot ip = 192.168.1.121");
-    }
-    else
-    {
-        n.getParam("xarm_robot_ip", robot_ip);
-    }
-
-    char server_ip[20]={0};
-    strcpy(server_ip,robot_ip.c_str());
-    XarmRTConnection rt_connect(n, server_ip, driver);
-
-    // ros::spin();
-    ros::waitForShutdown();
-
-
-
-    printf("end");
-    
     return 0;
 }

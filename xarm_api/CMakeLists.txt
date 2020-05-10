@@ -23,7 +23,6 @@ set(XARM_API_DIR src/xarm)
 
 include_directories(
  include
-  ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -69,24 +68,20 @@ ament_target_dependencies(${PROJECT_NAME}
         sensor_msgs
         )
 
-add_executable(example1_report_norm_node 
-   test/example1_report_norm.cc 
-)
+add_executable(example1_report_norm_node test/example1_report_norm.cc )
+target_link_libraries(example1_report_norm_node ${PROJECT_NAME})
+
 add_executable(xarm_driver_node
    src/xarm_driver_node.cpp
    src/xarm_driver.cpp
 )
-add_executable(move_test
+target_link_libraries(xarm_driver_node ${PROJECT_NAME})
+
+#[[add_executable(move_test
    test/move_test.cpp
 )
-
- target_link_libraries(example1_report_norm_node 
+target_link_libraries(move_test
    ${PROJECT_NAME}
  )
- target_link_libraries(xarm_driver_node 
-   ${PROJECT_NAME}
- )
-target_link_libraries(move_test 
-   ${PROJECT_NAME}
- )
+]]
 

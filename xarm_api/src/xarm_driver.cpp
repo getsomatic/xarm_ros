@@ -7,6 +7,7 @@
 #include <xarm_driver.h>
 #include "xarm/instruction/uxbus_cmd_config.h"
 #include "xarm/linux/thread.h"
+#include <unistd.h>
 
 #define CMD_HEARTBEAT_US 3e7 // 30s
 
@@ -60,8 +61,19 @@ namespace xarm_api
         robot_rt_state_ = create_publisher<xarm_msgs::msg::RobotMsg>("xarm_states", 10);
         end_input_state_ = create_publisher<xarm_msgs::msg::IOState>("xarm_input_states", 10);
 
-        nh_.getParam("DOF",dof_);
+        this->declare_parameter("DOF");
+         if (!this->get_parameter("DOF", dof_)) {
+             RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
+             assert(false);
+         } else {
+             RCLCPP_INFO(log_, "DOF set to %d", dof_);
+         }
+         // If you dont want to set DOF - you can use this line so it will be 7
+        //this->get_parameter_or("portName", dof_, 7);
+    }
 
+    void XARMDriver::XARMDriverInit(char *server_ip)
+    {
         arm_report_ = connext_tcp_report_norm(server_ip);
         // ReportDataNorm norm_data_;
         arm_cmd_ = connect_tcp_control(server_ip);
@@ -83,11 +95,6 @@ namespace xarm_api
             }
 
         }
-    }
-
-    void XARMDriver::XARMDriverInit(char *server_ip)
-    {
-
     }
 
     void XARMDriver::Heartbeat(void)
@@ -436,7 +443,7 @@ namespace xarm_api
         arm_cmd_->tgpio_get_analog1(&io_msg.analog_1);
         arm_cmd_->tgpio_get_analog2(&io_msg.analog_2);
 
-        end_input_state_.publish(io_msg);
+        end_input_state_->publish(io_msg);
     }
 
     int XARMDriver::get_frame(void)
