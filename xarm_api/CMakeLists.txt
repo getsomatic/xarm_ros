@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(xarm_api)
 
- add_compile_options(-std=c++11)
+ add_compile_options(-std=c++14)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -51,9 +51,6 @@ add_library(xarm_ros_client
   src/xarm_ros_client.cpp
 )
 
-#add_dependencies(xarm_ros_client xarm_msgs_generate_messages_cpp)
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
 ament_target_dependencies(xarm_ros_client
         rclcpp
         std_msgs
@@ -77,6 +74,25 @@ add_executable(xarm_driver_node
 )
 target_link_libraries(xarm_driver_node ${PROJECT_NAME})
 
+install(
+        TARGETS ${PROJECT_NAME}
+        EXPORT export_${PROJECT_NAME}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
+
+install(
+        TARGETS xarm_ros_client
+        EXPORT export_xarm_ros_client
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include
+)
+
 #[[add_executable(move_test
    test/move_test.cpp
 )
@@ -85,3 +101,7 @@ target_link_libraries(move_test
  )
 ]]
 
+ament_export_libraries(${PROJECT_NAME})
+ament_export_libraries(xarm_ros_client)
+
+ament_package()

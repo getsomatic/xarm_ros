@@ -2,3 +2,5 @@
 /xarm_gazebo/.idea/
 /xarm_description/cmake-build-debug/
 /.idea/
+/xarm7_moveit_config/cmake-build-debug/
+/xarm_gazebo/cmake-build-debug/
