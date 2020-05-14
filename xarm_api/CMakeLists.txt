@@ -93,6 +93,11 @@ install(
         INCLUDES DESTINATION include
 )
 
+install(
+        DIRECTORY include/
+        DESTINATION include
+)
+
 #[[add_executable(move_test
    test/move_test.cpp
 )
@@ -101,6 +106,7 @@ target_link_libraries(move_test
  )
 ]]
 
+ament_export_include_directories(include)
 ament_export_libraries(${PROJECT_NAME})
 ament_export_libraries(xarm_ros_client)
 

@@ -4,41 +4,44 @@
  *
  * Author: Jason Peng <jason@ufactory.cc>
  ============================================================================*/
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <combined_robot_hw/combined_robot_hw.h>
 #include "xarm_hw.h"
 
 int main(int argc, char**argv)
 {
-	ros::init(argc, argv, "xarm_controller");
-	ros::NodeHandle nh;
-	ros::Rate r(100);
-	
-	ros::Duration(1.0).sleep();
+	rclcpp::init(argc, argv); //, "xarm_controller");
+    rclcpp::Rate r(100);
 
-	xarm_control::XArmHW xarm_hw;
-	if(!xarm_hw.init(nh, nh)) exit(-1);
+    rclcpp::Rate  r1(0.5);
+    r1.sleep();
+    auto multiThreadedExecutor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
+    auto node = std::make_shared<rclcpp::Node>("xarm_control_node");
+    multiThreadedExecutor->add_node(node);
 
-	controller_manager::ControllerManager cm(&xarm_hw, nh);
+    auto xarm_hw = std::make_shared<xarm_control::XArmHW>(node);
+	if(!xarm_hw->init()) exit(-1);
 
-  	ros::AsyncSpinner spinner(4);
-	spinner.start();
+	controller_manager::ControllerManager cm(xarm_hw, multiThreadedExecutor);
+
+    multiThreadedExecutor->spin();
 
 	// IMPORTANT: DO NOT REMOVE THIS DELAY !!!
 	/* Wait for correct initial position to be updated to ros_controller */
-	ros::Duration(2.0).sleep();
-
-	ros::Time ts = ros::Time::now();
-	while (ros::ok())
-	{	
-	   ros::Duration elapsed = ros::Time::now() - ts;
-	   ts = ros::Time::now();
+    r1.sleep();
+    rclcpp::Clock clock;
+    rclcpp::Time ts = clock.now();
+	while (rclcpp::ok())
+	{
+        rclcpp::Duration elapsed = clock.now() - ts;
+	   ts = clock.now();
 	   // xarm_hw.read(ts, elapsed);
 	   cm.update(ts, elapsed, xarm_hw.need_reset()); // reset_controllers=true: preempt and cancel current goal
 	   
-	   xarm_hw.write(ts, elapsed);
+	   xarm_hw->write(ts, elapsed);
 	   r.sleep();
 	}
-	spinner.stop();
+
+	rclcpp::shutdown();
 	return 0;
 }

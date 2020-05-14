@@ -6,10 +6,15 @@
  ============================================================================*/
 
 #include "xarm_hw.h"
-
+#include "string"
 namespace xarm_control
 {
-	void XArmHW::clientInit(const std::string& robot_ip, ros::NodeHandle &root_nh)
+
+    XArmHW::XArmHW(rclcpp::Node::SharedPtr node): node_(node) {
+
+    }
+
+	void XArmHW::clientInit(const std::string& robot_ip)
 	{
 		position_cmd_.resize(dof_);
 		position_cmd_float_.resize(dof_); // command vector must have 7 dimention!
@@ -22,57 +27,68 @@ namespace xarm_control
 		curr_err = 0;
 		curr_state = 0;
 
-		pos_sub_ = root_nh.subscribe(jnt_state_topic, 100, &XArmHW::pos_fb_cb, this);
-		state_sub_ = root_nh.subscribe(xarm_state_topic, 100, &XArmHW::state_fb_cb, this);
+		pos_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(jnt_state_topic, 100, std::bind(&XArmHW::pos_fb_cb, this, std::placeholders::_1));
+        state_sub_ = node_->create_subscription<xarm_msgs::msg::RobotMsg>(xarm_state_topic, 100, std::bind(&XArmHW::state_fb_cb, this, std::placeholders::_1));
 
 		for(unsigned int j=0; j < dof_; j++)
 	  	{
 	  		// Create joint state interface for all joints
 	    	js_interface_.registerHandle(hardware_interface::JointStateHandle(jnt_names_[j], &position_fdb_[j], &velocity_fdb_[j], &effort_fdb_[j]));
 
-	    	hardware_interface::JointHandle joint_handle;
+
+	    	/*hardware_interface::JointHandle joint_handle;
 	    	joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
-	      	pj_interface_.registerHandle(joint_handle);
+	    	*/
+	    	// TODO: Think which of them to choose
+	    	hardware_interface::JointCommandHandle joint_handle1;
+	    	joint_handle1 = hardware_interface::JointCommandHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
+
+	    	hardware_interface::JointStateHandle joint_handle2;
+	    	joint_handle2 = hardware_interface::JointStateHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
+	    	//pj_interface_.registerHandle(joint_handle);
 	  	}
 
 	  	registerInterface(&js_interface_);
 	  	registerInterface(&pj_interface_);
 	  	
-	  	int ret1 = xarm.motionEnable(1);
-	  	int ret2 = xarm.setMode(XARM_MODE::SERVO);
-	  	int ret3 = xarm.setState(XARM_STATE::START);
+	  	int ret1 = xarm->motionEnable(1);
+	  	int ret2 = xarm->setMode(XARM_MODE::SERVO);
+	  	int ret3 = xarm->setState(XARM_STATE::START);
 
 	  	if(ret3)
 	  	{
-	  		ROS_ERROR("The Xarm may not be properly connected or hardware error exists, PLEASE CHECK or RESTART HARDWARE!!!");
-	  		ROS_ERROR(" ");
-	  		ROS_ERROR("Did you specify the correct ros param xarm_robot_ip ? Exitting...");
-	  		ros::shutdown();
+	  		RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"The Xarm may not be properly connected or hardware error exists, PLEASE CHECK or RESTART HARDWARE!!!");
+            RCLCPP_ERROR(rclcpp::get_logger("XArmHW")," ");
+            RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"Did you specify the correct ros param xarm_robot_ip ? Exitting...");
+	  		rclcpp::shutdown();
 	  		exit(1);
 	  	}
 
 	}
 
-	bool XArmHW::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
+	int XArmHW::init()
 	{
-		std::string hw_ns = robot_hw_nh.getNamespace() + "/";
+        std::string hw_ns(node_->get_namespace());
+        hw_ns+="/";
+        
+
 		ros::service::waitForService(hw_ns+"motion_ctrl");
 	  	ros::service::waitForService(hw_ns+"set_state");
 	  	ros::service::waitForService(hw_ns+"set_mode");
 	  	ros::service::waitForService(hw_ns+"move_servoj");
-		xarm.init(robot_hw_nh);
+		xarm = std::make_shared<xarm_api::XArmROSClient>();
 		std::string robot_ip;
 		std::vector<std::string> jnt_names;
 		int xarm_dof = 0;
 
 		if(!robot_hw_nh.hasParam("DOF"))
 		{
-			ROS_ERROR("ROS Parameter xarm_dof not specified!");
+            RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"ROS Parameter xarm_dof not specified!");
 			return false;
 		}
 		if(!robot_hw_nh.hasParam("xarm_robot_ip"))
 		{
-			ROS_ERROR("ROS Parameter xarm_robot_ip not specified!");
+            RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"ROS Parameter xarm_robot_ip not specified!");
 			return false;
 		}
 
@@ -83,16 +99,16 @@ namespace xarm_control
 		dof_ = xarm_dof;
 		jnt_names_ = jnt_names;
 
-		clientInit(robot_ip, robot_hw_nh);
+		clientInit(robot_ip);
 		return true;
 	}
 
 	XArmHW::~XArmHW()
 	{
-		xarm.setMode(XARM_MODE::POSE);
+		xarm->setMode(XARM_MODE::POSE);
 	}
 
-	void XArmHW::pos_fb_cb(const sensor_msgs::msg::JointState::ConstPtr& data)
+	void XArmHW::pos_fb_cb(sensor_msgs::msg::JointState::SharedPtr data)
 	{
 		for(int j=0; j<dof_; j++)
 		{
@@ -102,19 +118,19 @@ namespace xarm_control
 		}
 	}
 
-	void XArmHW::state_fb_cb(const xarm_msgs::srv::RobotMsg::ConstPtr& data)
+	void XArmHW::state_fb_cb(xarm_msgs::msg::RobotMsg::SharedPtr data)
 	{
 		curr_mode = data->mode;
 		curr_state = data->state;
 		curr_err = data->err;
 	}
 
-	void XArmHW::read(const ros::Time& time, const ros::Duration& period)
+	void XArmHW::read(const rclcpp::Time& time, const rclcpp::Duration& period)
 	{
 		// basically the above feedback callback functions have done the job
 	}
 
-	void XArmHW::write(const ros::Time& time, const ros::Duration& period)
+	void XArmHW::write(const rclcpp::Time& time, const rclcpp::Duration& period)
 	{
 
 		for(int k=0; k<dof_; k++)
@@ -122,7 +138,7 @@ namespace xarm_control
 			position_cmd_float_[k] = (float)position_cmd_[k];
 		}
 
-		xarm.setServoJ(position_cmd_float_);
+		xarm->setServoJ(position_cmd_float_);
 
 	}
 
@@ -142,4 +158,4 @@ namespace xarm_control
 	}
 }
 
-PLUGINLIB_EXPORT_CLASS(xarm_control::XArmHW, hardware_interface::RobotHW)
+PLUGINLIB_EXPORT_CLASS(xarm_control::XArmHW, hardware_interface::RobotHardware)

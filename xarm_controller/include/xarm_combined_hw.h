@@ -4,7 +4,7 @@
  *
  * Author: Jason Peng <jason@ufactory.cc>
  ============================================================================*/
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <combined_robot_hw/combined_robot_hw.h>
 #include "xarm_hw.h"
 

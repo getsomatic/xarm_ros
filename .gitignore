@@ -4,3 +4,4 @@
 /.idea/
 /xarm7_moveit_config/cmake-build-debug/
 /xarm_gazebo/cmake-build-debug/
+/xarm_controller/cmake-build-debug/
