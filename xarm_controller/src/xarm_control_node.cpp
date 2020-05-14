@@ -5,7 +5,7 @@
  * Author: Jason Peng <jason@ufactory.cc>
  ============================================================================*/
 #include <rclcpp/rclcpp.hpp>
-#include <combined_robot_hw/combined_robot_hw.h>
+//#include <combined_robot_hw/combined_robot_hw.h>
 #include "xarm_hw.h"
 
 int main(int argc, char**argv)
@@ -16,11 +16,14 @@ int main(int argc, char**argv)
     rclcpp::Rate  r1(0.5);
     r1.sleep();
     auto multiThreadedExecutor = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
-    auto node = std::make_shared<rclcpp::Node>("xarm_control_node");
-    multiThreadedExecutor->add_node(node);
+    //std::shared_ptr<xarm_control::XArmHW> xarm_hw(new xarm_control::XArmHW());
 
-    auto xarm_hw = std::make_shared<xarm_control::XArmHW>(node);
-	if(!xarm_hw->init()) exit(-1);
+    auto xarm_hw = std::make_shared<xarm_control::XArmHW>();
+
+	if(!xarm_hw->init())
+	    exit(-1);
+
+	multiThreadedExecutor->add_node(xarm_hw->XArmROSClient());
 
 	controller_manager::ControllerManager cm(xarm_hw, multiThreadedExecutor);
 
@@ -36,7 +39,7 @@ int main(int argc, char**argv)
         rclcpp::Duration elapsed = clock.now() - ts;
 	   ts = clock.now();
 	   // xarm_hw.read(ts, elapsed);
-	   cm.update(ts, elapsed, xarm_hw.need_reset()); // reset_controllers=true: preempt and cancel current goal
+	   cm.update(); // reset_controllers=true: preempt and cancel current goal
 	   
 	   xarm_hw->write(ts, elapsed);
 	   r.sleep();

@@ -5,12 +5,14 @@
  * Author: Jason Peng <jason@ufactory.cc>
  ============================================================================*/
 
+#define DOF 7
+
 #include "xarm_hw.h"
 #include "string"
 namespace xarm_control
 {
 
-    XArmHW::XArmHW(rclcpp::Node::SharedPtr node): node_(node) {
+    XArmHW::XArmHW() {
 
     }
 
@@ -27,30 +29,9 @@ namespace xarm_control
 		curr_err = 0;
 		curr_state = 0;
 
-		pos_sub_ = node_->create_subscription<sensor_msgs::msg::JointState>(jnt_state_topic, 100, std::bind(&XArmHW::pos_fb_cb, this, std::placeholders::_1));
-        state_sub_ = node_->create_subscription<xarm_msgs::msg::RobotMsg>(xarm_state_topic, 100, std::bind(&XArmHW::state_fb_cb, this, std::placeholders::_1));
+		pos_sub_ = xarm->create_subscription<sensor_msgs::msg::JointState>(jnt_state_topic, 100, std::bind(&XArmHW::pos_fb_cb, this, std::placeholders::_1));
+        state_sub_ = xarm->create_subscription<xarm_msgs::msg::RobotMsg>(xarm_state_topic, 100, std::bind(&XArmHW::state_fb_cb, this, std::placeholders::_1));
 
-		for(unsigned int j=0; j < dof_; j++)
-	  	{
-	  		// Create joint state interface for all joints
-	    	js_interface_.registerHandle(hardware_interface::JointStateHandle(jnt_names_[j], &position_fdb_[j], &velocity_fdb_[j], &effort_fdb_[j]));
-
-
-	    	/*hardware_interface::JointHandle joint_handle;
-	    	joint_handle = hardware_interface::JointHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
-	    	*/
-	    	// TODO: Think which of them to choose
-	    	hardware_interface::JointCommandHandle joint_handle1;
-	    	joint_handle1 = hardware_interface::JointCommandHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
-
-	    	hardware_interface::JointStateHandle joint_handle2;
-	    	joint_handle2 = hardware_interface::JointStateHandle(js_interface_.getHandle(jnt_names_[j]),&position_cmd_[j]);
-	    	//pj_interface_.registerHandle(joint_handle);
-	  	}
-
-	  	registerInterface(&js_interface_);
-	  	registerInterface(&pj_interface_);
-	  	
 	  	int ret1 = xarm->motionEnable(1);
 	  	int ret2 = xarm->setMode(XARM_MODE::SERVO);
 	  	int ret3 = xarm->setState(XARM_STATE::START);
@@ -68,34 +49,23 @@ namespace xarm_control
 
 	int XArmHW::init()
 	{
-        std::string hw_ns(node_->get_namespace());
+        std::string hw_ns(xarm->get_namespace());
         hw_ns+="/";
-        
 
-		ros::service::waitForService(hw_ns+"motion_ctrl");
-	  	ros::service::waitForService(hw_ns+"set_state");
-	  	ros::service::waitForService(hw_ns+"set_mode");
-	  	ros::service::waitForService(hw_ns+"move_servoj");
 		xarm = std::make_shared<xarm_api::XArmROSClient>();
 		std::string robot_ip;
 		std::vector<std::string> jnt_names;
-		int xarm_dof = 0;
+		int xarm_dof = DOF;
 
-		if(!robot_hw_nh.hasParam("DOF"))
-		{
-            RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"ROS Parameter xarm_dof not specified!");
-			return false;
-		}
-		if(!robot_hw_nh.hasParam("xarm_robot_ip"))
-		{
-            RCLCPP_ERROR(rclcpp::get_logger("XArmHW"),"ROS Parameter xarm_robot_ip not specified!");
-			return false;
-		}
+        // TODO: Add parameters in YAML
 
-		/* getParam forbids to change member */
-		robot_hw_nh.getParam("DOF", xarm_dof);
-		robot_hw_nh.getParam("xarm_robot_ip", robot_ip);
-		robot_hw_nh.getParam("joint_names", jnt_names);
+        xarm->declare_parameter("xarm_robot_ip");
+        xarm->get_parameter("xarm_robot_ip", robot_ip);
+        RCLCPP_INFO(rclcpp::get_logger("XArmHW"), "xarm_robot_ip=%s", robot_ip.c_str());
+
+        xarm->declare_parameter("joint_names");
+        xarm->get_parameter("joint_names", jnt_names);
+        RCLCPP_INFO(rclcpp::get_logger("XArmHW"), "joint_names size=%s", jnt_names.size());
 		dof_ = xarm_dof;
 		jnt_names_ = jnt_names;
 
@@ -156,6 +126,18 @@ namespace xarm_control
 		else
 			return false;
 	}
+
+    std::shared_ptr<xarm_api::XArmROSClient> XArmHW::XArmROSClient() {
+        return xarm;
+    }
+
+    hardware_interface::hardware_interface_ret_t XArmHW::read() {
+        return 0;
+    }
+
+    hardware_interface::hardware_interface_ret_t XArmHW::write() {
+        return 0;
+    }
 }
 
 PLUGINLIB_EXPORT_CLASS(xarm_control::XArmHW, hardware_interface::RobotHardware)

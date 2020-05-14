@@ -11,8 +11,6 @@
 // ros_control
 #include <control_toolbox/pid.hpp>
 #include <controller_manager/controller_manager.hpp>
-//#include <hardware_interface/joint_state_interface.hpp>
-//#include <hardware_interface/joint_command_interface.hpp>
 #include <hardware_interface/robot_hardware.hpp>
 #include <hardware_interface/joint_state_handle.hpp>
 #include <hardware_interface/joint_command_handle.hpp>
@@ -21,14 +19,13 @@
 // ROS
 #include <rclcpp/rclcpp.hpp>
 #include <angles/angles.h>
-#include <pluginlib/class_list_macros.h>
+#include <pluginlib/class_list_macros.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 // for mutex
 #include <pthread.h>
 // xarm
 #include "xarm/instruction/uxbus_cmd_config.h"
 #include "xarm_ros_client.h"
-
 #include "xarm_msgs/msg/robot_msg.hpp"
 
 namespace xarm_control
@@ -39,8 +36,8 @@ namespace xarm_control
 	class XArmHW : public hardware_interface::RobotHardware
 	{
 	public:
-		XArmHW(rclcpp::Node::SharedPtr node);
-		~XArmHW();
+		XArmHW();
+		~XArmHW() override;
 		virtual int init();
 		virtual void read(const rclcpp::Time& time, const rclcpp::Duration& period);
 		virtual void write(const rclcpp::Time& time, const rclcpp::Duration& period);
@@ -58,7 +55,11 @@ namespace xarm_control
 		/* check whether the controller needs to be reset due to error or mode change */
 		bool need_reset();
 
-	private:
+        hardware_interface::hardware_interface_ret_t read() override;
+
+        hardware_interface::hardware_interface_ret_t write() override;
+
+    private:
 		int curr_state;
 		int curr_mode;
 		int curr_err;
@@ -74,22 +75,13 @@ namespace xarm_control
 		std::vector<double> velocity_fdb_;
 		std::vector<double> effort_fdb_;
 
-
         std::shared_ptr<xarm_api::XArmROSClient> xarm;
-
-		hardware_interface::JointStateHandle    js_interface_;
-	  	//hardware_interface::EffortJointInterface   ej_interface_;
-	  	hardware_interface::P pj_interface_;
-	  	//hardware_interface::VelocityJointInterface vj_interface_;
-
 		rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr pos_sub_;
         rclcpp::Subscription<xarm_msgs::msg::RobotMsg>::SharedPtr state_sub_;
 
 		void clientInit(const std::string& robot_ip);
 		void pos_fb_cb(sensor_msgs::msg::JointState::SharedPtr data);
 		void state_fb_cb(xarm_msgs::msg::RobotMsg::SharedPtr data);
-        rclcpp::Node::SharedPtr node_;
-
 	};
 
 }
