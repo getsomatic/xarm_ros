@@ -87,86 +87,32 @@ int main(int argc, char **argv)
 
         msg.data = angle_cmd;
 
-        switch(robot_dof)
-      	{
-	      	case 7:
-	      	{
-		      	// Give J2 and J4 same angle_cmd from calculation
-                msg.data = -msg.data;
-		        angle4_pub->publish(msg);
-                msg.data = -msg.data;
-                
-		        angle2_pub->publish(msg);
 
-		        // Give J1 and J5 twice as angle_cmd from calculation
-		        msg.data = msg.data * 2;
+        // Give J2 and J4 same angle_cmd from calculation
+        msg.data = -msg.data;
+        angle4_pub->publish(msg);
+        msg.data = -msg.data;
 
-		        angle1_pub->publish(msg);
+        angle2_pub->publish(msg);
 
-		        angle5_pub->publish(msg);
+        // Give J1 and J5 twice as angle_cmd from calculation
+        msg.data = msg.data * 2;
 
-		        // Other joint command fixed to zero
-		        msg.data = 0.0;
+        angle1_pub->publish(msg);
 
-		        angle3_pub->publish(msg);
+        angle5_pub->publish(msg);
 
-		        angle6_pub->publish(msg);
+        // Other joint command fixed to zero
+        msg.data = 0.0;
 
-		        angle7_pub->publish(msg);
+        angle3_pub->publish(msg);
 
-		        break;
-	    	}
-	    	case 6:
-	    	{
-	    		// Give J2 and J3 same angle_cmd from calculation
-		        angle3_pub->publish(msg);
+        angle6_pub->publish(msg);
 
-		        angle2_pub->publish(msg);
+        angle7_pub->publish(msg);
 
-		        // Give J1 and J4 twice as angle_cmd from calculation
-		        msg.data = msg.data * 2;
+        break;
 
-		        angle1_pub->publish(msg);
-
-		        angle4_pub->publish(msg);
-
-		        // Other joint command fixed to zero
-		        msg.data = 0.0;
-
-		        angle5_pub->publish(msg);
-
-		        angle6_pub->publish(msg);
-
-		        break;
-	    	}
-            case 5:
-            {
-                // Give J2 and J3 same angle_cmd from calculation
-                angle3_pub->publish(msg);
-
-                angle2_pub->publish(msg);
-
-                // Give J1 and J4 twice as angle_cmd from calculation
-                msg.data = msg.data * 2;
-
-                angle1_pub->publish(msg);
-
-                // Other joint command fixed to zero
-                msg.data = 0.0;
-
-                angle4_pub->publish(msg);
-
-                angle5_pub->publish(msg);
-
-                break;
-            }
-
-	    	default:
-	    	{
-                RCLCPP_ERROR(rclcpp::get_logger("xarm.angle_control"),"DOF parameter not correct, please check!");
-	    		exit(-1);
-	    	}
-	    }
 
         singleThreadedExecutor.spin_once();
         loop_rate.sleep();

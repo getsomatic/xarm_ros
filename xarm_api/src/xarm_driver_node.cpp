@@ -19,17 +19,19 @@ class XarmRTConnection : public rclcpp::Node
         {
             char server_ip[20]={0};
             std::string robot_ip = "192.168.1.121";
-            this->declare_parameter("xarm_robot_ip");
-            if (!this->get_parameter("xarm_robot_ip", robot_ip)) {
+
+            this->declare_parameter("robot_ip");
+            if (!this->get_parameter("robot_ip", robot_ip)) {
                 RCLCPP_ERROR(log_, "Failed to get parameter xarm_robot_ip. Shutting down...");
                 assert(false);
             } else {
                 RCLCPP_INFO(log_, "Got IP %s", robot_ip.c_str());
             }
+
             strcpy(server_ip, robot_ip.c_str());
 
-            this->declare_parameter("DOF");
-            if (!this->get_parameter("DOF", joint_num_)) {
+            this->declare_parameter("dof");
+            if (!this->get_parameter("dof", joint_num_)) {
                 RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
                 assert(false);
             } else {
@@ -170,7 +172,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
 
     auto xarm_driver = std::make_shared<xarm_api::XARMDriver>();
-    RCLCPP_INFO(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
+    RCLCPP_ERROR(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
 
     XarmRTConnection rt_connect(xarm_driver);
 

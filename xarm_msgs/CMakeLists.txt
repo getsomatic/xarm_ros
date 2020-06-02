@@ -5,6 +5,7 @@ find_package(ament_cmake REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
         #Message
@@ -25,9 +26,16 @@ rosidl_generate_interfaces(${PROJECT_NAME}
         "srv/SetLoad.srv"
         "srv/TCPOffset.srv"
 
+        # Srv for Planner
+        "srv/ExecPlan.srv"
+        "srv/JointPlan.srv"
+        "srv/PosePlan.srv"
+        "srv/SingleStraightPlan.srv"
+
         DEPENDENCIES
         builtin_interfaces
         std_msgs
+        geometry_msgs
         )
 
 ament_export_dependencies(rosidl_default_runtime)

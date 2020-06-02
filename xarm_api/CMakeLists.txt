@@ -34,6 +34,7 @@ ament_target_dependencies(${PROJECT_NAME}
         std_msgs
         xarm_msgs
         sensor_msgs
+        geometry_msgs
         )
 
 ament_export_libraries(${PROJECT_NAME})
@@ -56,6 +57,7 @@ ament_target_dependencies(xarm_ros_client
         rclcpp
         std_msgs
         xarm_msgs
+        geometry_msgs
         sensor_msgs
         )
 
@@ -81,6 +83,10 @@ target_link_libraries(xarm_driver_node ${PROJECT_NAME})
 
 install(DIRECTORY include/
         DESTINATION include)
+
+install(TARGETS
+        xarm_driver_node
+        DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_package()

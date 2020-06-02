@@ -61,8 +61,8 @@ namespace xarm_api
         robot_rt_state_ = create_publisher<xarm_msgs::msg::RobotMsg>("xarm_states", 10);
         end_input_state_ = create_publisher<xarm_msgs::msg::IOState>("xarm_input_states", 10);
 
-        this->declare_parameter("DOF");
-         if (!this->get_parameter("DOF", dof_)) {
+        this->declare_parameter("dof");
+         if (!this->get_parameter("dof", dof_)) {
              RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
              assert(false);
          } else {
@@ -434,6 +434,7 @@ namespace xarm_api
     
     void XARMDriver::pub_joint_state(sensor_msgs::msg::JointState js_msg)
     {
+        RCLCPP_ERROR(log_, "Joints J1=%lf, J2=%lf, J3=%lf, J4=%lf, J5=%lf, J6=%lf, J7=%lf", js_msg.position[0], js_msg.position[1], js_msg.position[2], js_msg.position[3], js_msg.position[4], js_msg.position[5], js_msg.position[6]);
         joint_state_->publish(js_msg);
     }
 
