@@ -1,10 +1,10 @@
 ## 重要提示:
 &ensp;&ensp;由于机械臂通信格式修改, 建议在***2019年6月前发货***的xArm 早期用户尽早 ***升级*** 控制器固件程序，这样才能在以后的更新中正常驱动机械臂运动以及使用最新开发的各种功能。请联系我们获得升级的详细指示。 当前ROS库主要的分支已不支持旧版本，先前版本的ROS驱动包还保留在 ***'legacy'*** 分支中, 但不会再有更新。    
-
+&ensp;&ensp;在使用xarm_ros之前，请务必按照第3节**准备工作**的指示安装必要的第三方支持库，否则使用时会出现错误。  
 # 目录:  
 * [1. 简介](#1-简介)
 * [2. 更新记录](#2-更新记录)
-* [3. 准备工作](#3-准备工作)
+* [3. 准备工作(***必须***)](#3-准备工作)
 * [4. 开始使用'xarm_ros'](#4-开始使用xarm_ros)
 * [5. 代码库介绍及使用说明](#5-代码库介绍及使用说明)
     * [5.1 xarm_description](#51-xarm_description)  
@@ -20,25 +20,32 @@
         * [5.7.4 获得反馈状态信息](#获得反馈状态信息)  
         * [5.7.5 关于设定末端工具偏移量](#关于设定末端工具偏移量)  
         * [5.7.6 清除错误](#清除错误)  
-		* [5.7.7 机械爪控制(***new***)](#机械爪控制)  
+		* [5.7.7 机械爪控制(***updated***)](#机械爪控制)  
+		* [5.7.8 末端工具Modbus通信 (***new***)](#末端工具modbus通信)
 * [6. 模式切换(***new***)](#6-模式切换)
     * [6.1 模式介绍](#61-模式介绍)
     * [6.2 切换模式的正确方法](#62-切换模式的正确方法)
 * [7. 其他示例(***new***)](#7-其他示例)
-
+	* [7.1 两台xArm5 (两进程独立控制)](https://github.com/xArm-Developer/xarm_ros/tree/master/examples#1-multi_xarm5-controlled-separately)
+    * [7.2 Servo_Cartesian 笛卡尔位置伺服](https://github.com/xArm-Developer/xarm_ros/tree/master/examples#2-servo_cartesian-streamed-cartesian-trajectory)
+    * [7.3 Servo_Joint 关节位置伺服](https://github.com/xArm-Developer/xarm_ros/tree/master/examples#3-servo_joint-streamed-joint-space-trajectory)
+    * [7.4 使用同一个moveGroup节点控制xArm6双臂](https://github.com/xArm-Developer/xarm_ros/tree/master/examples#4-dual-xarm6-controlled-with-one-movegroup-node)
 
 # 1. 简介：
    &ensp;&ensp;此代码库包含xArm模型文件以及相关的控制、规划等示例开发包。开发及测试使用的环境为 Ubuntu 16.04 + ROS Kinetic Kame。
    ***以下的指令说明是基于xArm7, 其他型号用户可以在对应位置将'xarm7'替换成'xarm6'或'xarm5'***
 
 # 2. 更新记录：
-   此代码库仍然处在早期开发阶段，新的功能支持、示例代码，bug修复等等会保持更新。  
-   * 添加xArm 7(旧版)描述文档，3D图形文件以及controller示例，用于进行ROS可视化仿真模拟。
+   此代码库仍然处在开发阶段，新的功能支持、示例代码，bug修复等等会保持更新。  
+   * 添加xArm 7 描述文档，3D图形文件以及controller示例，用于进行ROS可视化仿真模拟。
    * 添加MoveIt!规划器支持，用于控制Gazebo/RViz模型或者xArm真机，但二者不可同时启动。
-   * 由ROS直接控制xArm真机的相关支持目前还是Beta版本，用户使用时应尽量小心，我们会尽快完善。
+   * 添加 ROS直接控制xArm真机的相关支持，用户使用时应尽量小心。
    * 添加 xArm hardware interface 并在驱动真实机械臂时使用 ROS position_controllers/JointTrajectoryController。
-   * 添加 xArm 6 仿真和真机控制支持。
+   * 添加 xArm6 和 xArm5 仿真和真机控制支持。
    * 添加 xArm 机械爪仿真模型。
+   * 添加 xArm6 双臂控制示例。
+   * 添加 xArm Gripper action 控制。
+   * 添加 xArm-with-gripper Moveit 开发包。
 
 # 3. 准备工作
 
@@ -54,7 +61,10 @@ Gazebo ROS Control: <http://gazebosim.org/tutorials/?tut=ros_control>
 Moveit tutorial: <http://docs.ros.org/kinetic/api/moveit_tutorials/html/>  
 
 ## 3.3 如果使用Gazebo: 请提前下载好 'table' 3D 模型
-&ensp;&ensp;这个模型在Gazebo demo中会用到。在Gazebo仿真环境中, 在model database列表里寻找 'table', 并将此模型拖入旁边的3D环境中. 通过这个操作，桌子的模型就会自动下载到本地。
+&ensp;&ensp;这个模型在Gazebo demo中会用到。在Gazebo仿真环境中, 在model database列表里寻找 'table', 并将此模型拖入旁边的3D环境中. 通过这个操作，桌子的模型就会自动下载到本地。  
+
+## 3.4 安装"mimic_joint_plugin"用于xArm Gripper的Gazebo仿真
+&ensp;&ensp;如果xArm Gripper需要在Gazebo环境中仿真, 为了使物理引擎中的 mimic joints 并联机构可以正常运作，需要安装来自Konstantinos Chatzilygeroudis (@costashatz) 的 [**mimic_joint_plugin**](https://github.com/roboticsgroup/roboticsgroup_gazebo_plugins)。关于这个插件的使用参考了@mintar的[这个教程](https://github.com/mintar/mimic_joint_gazebo_tutorial) 。
 
 # 4. 开始使用'xarm_ros'
    
@@ -99,9 +109,10 @@ $ roslaunch xarm_description xarm7_rviz_display.launch
 ```
 ## 4.7 如果已安装Gazebo,可以执行demo查看效果
    ```bash
-   $ roslaunch xarm_gazebo xarm7_beside_table.launch [run_demo:=true]
+   $ roslaunch xarm_gazebo xarm7_beside_table.launch [run_demo:=true] [add_gripper:=true]
    ```
-&ensp;&ensp;指定'run_demo'为true时Gazebo环境启动后机械臂会自动执行一套编好的循环动作。 这套简单的command trajectory写在xarm_controller\src\sample_motion.cpp. 这个demo加载的控制器使用position interface（纯位置控制）。
+&ensp;&ensp;指定'run_demo'为true时Gazebo环境启动后机械臂会自动执行一套编好的循环动作。 这套简单的command trajectory写在xarm_controller\src\sample_motion.cpp. 这个demo加载的控制器使用position interface（纯位置控制）。  
+&ensp;&ensp;指定'add_gripper'为true时, 会加载带有xarm 夹爪的模型。
 
 # 5. 代码库介绍及使用说明
    
@@ -125,13 +136,21 @@ $ roslaunch xarm_description xarm7_rviz_display.launch
    ```
 
 #### Moveit!图形控制界面 + Gazebo 仿真环境:  
-   首先执行:  
+   1. 如果不需要带有xArm Gripper，首先执行:  
    ```bash
    $ roslaunch xarm_gazebo xarm7_beside_table.launch
    ```
    然后在另一个终端运行:
    ```bash
    $ roslaunch xarm7_moveit_config xarm7_moveit_gazebo.launch
+   ```
+   2. 如果**需要带有xArm Gripper**，首先执行:  
+   ```bash
+   $ roslaunch xarm_gazebo xarm7_beside_table.launch add_gripper:=true
+   ```
+   然后在另一个终端运行:
+   ```bash
+   $ roslaunch xarm7_gripper_moveit_config xarm7_gripper_moveit_gazebo.launch
    ```
    如果您在Moveit界面中规划了一条满意的轨迹, 点按"Execute"会使Gazebo中的虚拟机械臂同步执行此轨迹。
 
@@ -142,10 +161,10 @@ $ roslaunch xarm_description xarm7_rviz_display.launch
    ```
    检查terminal中的输出看看有无错误信息。如果启动无误，您可以将RViz中通过Moveit规划好的轨迹通过'Execute'按钮下发给机械臂执行。***但一定确保它不会与周围环境发生碰撞！***  
 
-#### Moveit!图形控制界面 + 安装了UFACTORY机械爪的xArm6真实机械臂:  
+#### Moveit!图形控制界面 + 安装了UFACTORY机械爪的xArm真实机械臂:  
    首先, 检查并确认xArm电源和控制器已上电开启, 然后运行:  
    ```bash
-   $ roslaunch xarm6_gripper_moveit_config realMove_exec.launch robot_ip:=<your controller box LAN IP address>
+   $ roslaunch xarm7_gripper_moveit_config realMove_exec.launch robot_ip:=<your controller box LAN IP address>
    ```
    如果使用了我们配套的机械爪(xArm gripper), 最好可以使用这个package，因为其中的配置会让Moveit在规划无碰撞轨迹时将机械爪考虑在内。 
   
@@ -159,11 +178,14 @@ $ roslaunch xarm_description xarm7_rviz_display.launch
 'robot_dof'参数指的是xArm的关节数目 (默认值为7)。  
 
 ## 5.7 xarm_api/xarm_msgs:
-&ensp;&ensp;这两个package提供给用户不需要自己进行轨迹规划(通过Moveit!或xarm_planner)就可以控制真实xArm机械臂的ros服务, xarm自带的控制盒会进行轨迹规划。 请 ***注意*** 这些service的执行并不通过面向'JointTrajectoryController'的hardware interface。当前支持三种运动命令（ros service同名）:  
-* move_joint: 关节空间的点到点运动, 用户仅需要给定目标关节位置，运动过程最大关节速度/加速度即可。 
-* move_line: 笛卡尔空间的直线轨迹运动，用户需要给定工具中心点（TCP）目标位置以及笛卡尔速度、加速度。  
-* move_lineb: 圆弧交融的直线运动，给定一系列中间点以及目标位置。 每两个中间点间为直线轨迹，但在中间点处做一个圆弧过渡（需给定半径）来保证速度连续。
-另外需要 ***注意*** 的是，使用以上三种service之前，需要通过service依次将机械臂模式(mode)设置为0，然后状态(state)设置为0。这些运动指令的意义和详情可以参考产品使用指南。除此之外还提供了其他xarm编程API支持的service调用, 对于相关ros service的定义在 [xarm_msgs目录](./xarm_msgs/)中。 
+&ensp;&ensp;这两个package提供给用户封装了xArm SDK功能的ros服务, xarm自带的控制盒会进行轨迹规划。当前支持六种运动命令（ros service同名）:  
+* move_joint: 关节空间的点到点运动, 用户仅需要给定目标关节位置，运动过程最大关节速度/加速度即可， 对应SDK里的set_servo_angle()函数。 
+* move_line: 笛卡尔空间的直线轨迹运动，用户需要给定工具中心点（TCP）目标位置以及笛卡尔速度、加速度，对应SDK里的set_position()函数【不指定交融半径】。  
+* move_lineb: 圆弧交融的直线运动，给定一系列中间点以及目标位置。 每两个中间点间为直线轨迹，但在中间点处做一个圆弧过渡（需给定半径）来保证速度连续，对应SDK里的set_position()函数【指定了交融半径】。  
+* move_line_tool: 基于工具坐标系（而不是基坐标系）的直线运动。对应SDK里的set_tool_position()函数。  
+另外需要 ***注意*** 的是，使用以上4种service之前，需要通过service依次将机械臂模式(mode)设置为0，然后状态(state)设置为0。这些运动指令的意义和详情可以参考产品使用指南。除此之外还提供了其他xarm编程API支持的service调用, 对于相关ros service的定义在 [xarm_msgs目录](./xarm_msgs/)中。  
+
+* move_servo_cart/move_servoj: （固定）高频率的笛卡尔或关节轨迹指令，分别对应SDK里的set_servo_cartesian()和set_servo_angle_j()，需要机械臂工作在**模式1**，可以间接实现速度控制。在使用这两个服务功能之前，务必做好**风险评估**并且仔细阅读第[7.2-7.3节](https://github.com/xArm-Developer/xarm_ros/tree/master/examples#2-servo_cartesian-streamed-cartesian-trajectory)的使用方法。  
 
 #### 使用ROS Service启动 xArm:
 
@@ -183,18 +205,33 @@ $ rosservice call /xarm/set_state 0
 ```
 
 #### 关节空间和笛卡尔空间运动指令的示例:
-&ensp;&ensp;以下三个运动命令使用同类型的srv request: [Move.srv](./xarm_msgs/srv/Move.srv)。 比如，调用关节运动命令，最大速度 0.35 rad/s，加速度 7 rad/s^2:  
+&ensp;&ensp;请注意角度应全部使用**radian**作为单位。以下运动命令都使用同类型的srv request: [Move.srv](./xarm_msgs/srv/Move.srv)。  
+##### 1. 关节空间运动:
+&ensp;&ensp;调用关节运动命令，最大速度 0.35 rad/s，加速度 7 rad/s^2:  
 ```bash
 $ rosservice call /xarm/move_joint [0,0,0,0,0,0,0] 0.35 7 0 0
-```
-&ensp;&ensp;调用笛卡尔空间指令，最大线速度 200 mm/s，加速度为 2000 mm/s^2:
-```bash
-$ rosservice call /xarm/move_line [250,100,300,3.14,0,0] 200 2000 0 0
 ```
 &ensp;&ensp;调用回原点服务 (各关节回到0角度)，最大角速度 0.35 rad/s，角加速度 7 rad/s^2:  
 ```bash
 $ rosservice call /xarm/go_home [] 0.35 7 0 0
 ```
+##### 2. 基坐标系笛卡尔空间运动:
+&ensp;&ensp;调用笛卡尔空间指令，目标位置表示在机械臂基坐标系中，最大线速度 200 mm/s，加速度为 2000 mm/s^2:  
+```bash
+$ rosservice call /xarm/move_line [250,100,300,3.14,0,0] 200 2000 0 0
+```
+##### 3. 工具坐标系笛卡尔空间运动:
+&ensp;&ensp;调用笛卡尔空间指令，目标位置表示在机械臂当前工具坐标系中，最大线速度 200 mm/s，加速度为 2000 mm/s^2，以下指令将基于当前工具坐标系做**相对移动**(delta_x=50mm, delta_y=100mm, delta_z=100mm), 没有姿态的相对变化：  
+```bash
+$ rosservice call /xarm/move_line_tool [50,100,100,0,0,0] 200 2000 0 0
+```
+
+##### 运动服务返回值:
+&ensp;&ensp;请注意以上的运动服务调用在默认情况下会**立刻返回**，如果希望等待运动结束之后再返回, 需要提前设置 ros parameter **"/xarm/wait_for_finish"** 为 **true**. 即:  
+```bash
+$ rosparam set /xarm/wait_for_finish true
+```   
+&ensp;&ensp;如果成功会返回 0，发生错误则会返回1.  
 
 #### 工具 I/O 操作:
 &ensp;&ensp;我们在机械臂末端提供了两路数字、两路模拟输入信号接口，以及两路数字输出信号接口。  
@@ -235,23 +272,71 @@ $ rostopic echo /xarm/xarm_states
 ```bash
 $ rosservice call /xarm/clear_err
 ```
+&ensp;&ensp;如果正在使用 Moveit!, 可以调用 "**/xarm/moveit_clear_err**", 这样可以省去再次手动设置模式1.   
+```bash
+$ rosservice call /xarm/moveit_clear_err
+```
 &ensp;&ensp;调用此服务之后 ***务必再次确认err状态信息*** , 如果它变成了0, 说明问题清除成功，否则请再次确认问题是否成功解决。清除成功之后， 记得 ***将robot state设置为0*** 以便使机械臂可以执行后续指令。  
 
 #### 机械爪控制:
-&ensp;&ensp;如果已将xArm Gripper (UFACTORY出品) 安装至机械臂末端，则可以使用如下的service来操作和检视机械爪:  
-1. 首先使能xArm机械爪并设置抓取速度, 如果成功，'ret'返回值为0。正确的速度范围是在***1到5000之间***，以1500为例:  
+&ensp;&ensp;如果已将xArm Gripper (UFACTORY出品) 安装至机械臂末端，则可以使用如下的service或action来操作和检视机械爪:  
+
+##### 1. Gripper services:  
+(1) 首先使能xArm机械爪并设置抓取速度, 如果成功，'ret'返回值为0。正确的速度范围是在***1到5000之间***，以1500为例:  
 ```bash
 $ rosservice call /xarm/gripper_config 1500
 ```
-2. 给定xArm机械爪位置（打开幅度）指令执行，如果成功，'ret'返回值为0。正确的位置范围是***0到850之间***, 0为关闭，850为完全打开，以500为例:  
+(2) 给定xArm机械爪位置（打开幅度）指令执行，如果成功，'ret'返回值为0。正确的位置范围是***0到850之间***, 0为关闭，850为完全打开，以500为例:  
 ```bash
 $ rosservice call /xarm/gripper_move 500
 ```
-3. 获取当前xArm机械爪的状态（位置和错误码）:
+(3) 获取当前xArm机械爪的状态（位置和错误码）:
 ```bash
-$ rosservice call /xarm/gripper_status
+$ rosservice call /xarm/gripper_state
 ```
-&ensp;&ensp;如果错误码不为0，请参考使用说明书查询错误原因，清除错误同样可使用上一节的clear_err service。
+&ensp;&ensp;如果错误码不为0，请参考使用说明书查询错误原因，清除错误同样可使用上一节的clear_err service。  
+
+##### 2. Gripper action:
+&ensp;&ensp; gripper move action 定义在 [Move.action](/xarm_gripper/action/Move.action). 目标包括期望的机械爪脉冲位置和脉冲速度. 可以通过设置xarm_bringup/launch/xarm7_server.launch 文件中的 "**use_gripper_action**" 参数来启动 action 服务器. Gripper action 可以这样调用:  
+```bash
+$ rostopic pub -1 /xarm/gripper_move/goal xarm_gripper/MoveActionGoal "header:
+  seq: 0
+  stamp:
+    secs: 0
+    nsecs: 0
+  frame_id: ''
+goal_id:
+  stamp:
+    secs: 0
+    nsecs: 0
+  id: ''
+goal:
+  target_pulse: 500.0
+  pulse_speed: 1500.0"
+
+```
+&ensp;&ensp; 或者通过以下方法调用:
+```bash
+$ rosrun xarm_gripper gripper_client 500 1500 
+```
+
+#### 末端工具Modbus通信:
+如果需要与末端工具进行modbus通讯, 需要先通过"xarm/config_tool_modbus"服务设置正确的通信波特率和超时时间 (ms) (参考 [ConfigToolModbus.srv](/xarm_msgs/srv/ConfigToolModbus.srv)). 例如: 
+```bash
+$ rosservice call /xarm/config_tool_modbus 115200 20
+```
+以上命令会设置末端modbus通信波特率为 115200 bps，接收超时时间为 20**毫秒**。 如果之后这些参数没有改变就不需要重新设置。 **请注意** 设置一个新的波特率可能会返回1（报错误码28）而不是0, 实际上如果设备已正确连接且没有其他导致通信错误的因素，设置是已经正确执行的。您可以清除错误后重新调用一次这个服务确定是否返回0。当前仅支持如下波特率设置 (单位bps): [4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1000000, 1500000, 2000000, 2500000].  
+
+设置完成后，modbus通信可以这样通过rosservice进行 (参考 [SetToolModbus.srv](/xarm_msgs/srv/SetToolModbus.srv)):  
+```bash
+$ rosservice call /xarm/set_tool_modbus [0x01,0x06,0x00,0x0A,0x00,0x03] 7
+```
+第一个参数是要发送的通讯字节序列, 第二个参数是需要接收的回复字节数量. **这个数字应该是期望收到的数据字节数+1 (不含CRC校验字符)**. 来自末端modbus返回的数据会在最前面添加值为**0x09**的一个字节, 剩余的即为设备返回的数据。 举例来说，对于某个测试设备，上面的指令可能返回:  
+```bash
+ret: 0
+respond_data: [9, 1, 6, 0, 10, 0, 3]
+```
+其中实际收到的数据帧为: [0x01, 0x06, 0x00, 0x0A, 0x00, 0x03]，长度为6.  
 
 # 6. 模式切换
 &ensp;&ensp;xArm 在不同的控制方式下可能会工作在不同的模式中，当前的模式可以通过topic "xarm/xarm_states" 的内容查看。在某些情况下，需要用户主动切换模式以达到继续正常工作的目的。

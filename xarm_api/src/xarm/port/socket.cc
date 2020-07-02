@@ -9,6 +9,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "xarm/linux/network.h"
 #include "xarm/linux/thread.h"
@@ -20,6 +21,13 @@ void SocketPort::recv_proc(void) {
     bzero(recv_data, que_maxlen_);
     num = recv(fp_, (void *)&recv_data[4], que_maxlen_ - 1, 0);
     if (num <= 0) {
+      // in case recv() blocking call is interrupted by a system signal, this should not be considered as socket failure.
+      if(errno == EINTR)
+      {
+        printf("EINTR occured\n");
+        continue;
+      }
+
       close(fp_);
       printf("SocketPort::recv_proc exit, %d\n", fp_);
       pthread_exit(0);
@@ -67,7 +75,6 @@ int SocketPort::read_frame(unsigned char *data) {
   if (state_ != 0) { return -1; }
 
   if (rx_que_->size() == 0) { return -1; }
-
   rx_que_->pop(data);
   return 0;
 }
