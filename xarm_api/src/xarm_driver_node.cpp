@@ -172,7 +172,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
 
     auto xarm_driver = std::make_shared<xarm_api::XARMDriver>();
-    RCLCPP_ERROR(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
+    RCLCPP_INFO(rclcpp::get_logger("xarm_node") ,"Starting XARM driver.");
 
     XarmRTConnection rt_connect(xarm_driver);
 
