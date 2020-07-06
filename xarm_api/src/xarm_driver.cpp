@@ -149,6 +149,8 @@ namespace xarm_api
 
         float offsets[6] = {0, 0, 0, 0, 0, 0};
         arm_cmd_->set_tcp_offset(offsets);
+
+        arm_cmd_->set_reduced_jointspeed(0.02);
 */
 
         res->ret = arm_cmd_->set_mode(req->data);
@@ -443,7 +445,7 @@ namespace xarm_api
     
     void XARMDriver::pub_joint_state(sensor_msgs::msg::JointState js_msg)
     {
-        RCLCPP_INFO(log_, "Joints J1=%lf, J2=%lf, J3=%lf, J4=%lf, J5=%lf, J6=%lf, J7=%lf", js_msg.position[0], js_msg.position[1], js_msg.position[2], js_msg.position[3], js_msg.position[4], js_msg.position[5], js_msg.position[6]);
+        //RCLCPP_INFO(log_, "Joints J1=%lf, J2=%lf, J3=%lf, J4=%lf, J5=%lf, J6=%lf, J7=%lf", js_msg.position[0], js_msg.position[1], js_msg.position[2], js_msg.position[3], js_msg.position[4], js_msg.position[5], js_msg.position[6]);
         joint_state_->publish(js_msg);
     }
 
