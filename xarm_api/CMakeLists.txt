@@ -14,7 +14,7 @@ include_directories(
  include
 )
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} SHARED
    ${XARM_API_DIR}/connect.cc
    ${XARM_API_DIR}/report_data.cc
    ${XARM_API_DIR}/common/crc16.cc
