@@ -9,6 +9,7 @@ find_package(xarm_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 set(XARM_API_DIR src/xarm)
+add_compile_options(-fPIC)
 
 include_directories(
  include
