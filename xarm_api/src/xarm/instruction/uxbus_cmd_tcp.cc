@@ -10,7 +10,6 @@
 
 #include "xarm/debug/debug_print.h"
 #include "xarm/instruction/uxbus_cmd_config.h"
-#include <iostream>
 
 UxbusCmdTcp::UxbusCmdTcp(SocketPort *arm_port) {
   arm_port_ = arm_port;
@@ -66,9 +65,6 @@ int UxbusCmdTcp::send_pend(int funcode, int num, int timeout, unsigned char *ret
       for (i = 0; i < n; i++) { ret_data[i] = rx_data[i + 8 + 4]; }
       // print_hex(" 3", rx_data, num + 8 + 4);
       return ret;
-    }
-    if((times%2) == 0) {
-        std::cout << "send_pend wait\n";
     }
     usleep(1000);
   }

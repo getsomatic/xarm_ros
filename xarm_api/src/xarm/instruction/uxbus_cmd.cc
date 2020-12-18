@@ -9,7 +9,6 @@
 #include "xarm/instruction/servo3_config.h"
 #include "xarm/instruction/uxbus_cmd_config.h"
 #include "xarm/debug/debug_print.h"
-#include <iostream>
 
 static int BAUDRATES[13] = { 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1000000, 1500000, 2000000, 2500000 };
 
@@ -65,7 +64,7 @@ int UxbusCmd::get_nu8(int funcode, int *rx_data, int num) {
 	return ret;
 }
 
-int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) { // 4 times
+int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) {
 	std::lock_guard<std::mutex> locker(mutex_);
 	int ret = send_xbus(funcode, 0, 0);
 	if (ret != 0) { return UXBUS_STATE::ERR_NOTTCP; }
@@ -106,26 +105,14 @@ int UxbusCmd::get_nu16(int funcode, int *rx_data, int num) {
 }
 
 int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
-    auto p1 = std::chrono::high_resolution_clock::now();
 	std::lock_guard<std::mutex> locker(mutex_);
-    auto p2 = std::chrono::high_resolution_clock::now();
 	// unsigned char hexdata[num * 4] = {0};
 	unsigned char *hexdata = new unsigned char[num * 4];
 	nfp32_to_hex(datas, hexdata, num);
-
 	int ret = send_xbus(funcode, hexdata, num * 4);
-
 	delete hexdata;
 	if (0 != ret) { return UXBUS_STATE::ERR_NOTTCP; }
-    auto p3 = std::chrono::high_resolution_clock::now();
 	ret = send_pend(funcode, 0, UXBUS_CONF::SET_TIMEOUT, NULL);
-    auto p4 = std::chrono::high_resolution_clock::now();
-
-    auto cnt1 = std::chrono::duration<double>(p2 - p1).count();
-    auto cnt2 = std::chrono::duration<double>(p3 - p2).count();
-    auto cnt3 = std::chrono::duration<double>(p4 - p3).count();
-
-    std::cout << "set_nfp32: " << cnt1 << "   " << cnt2 << "   " << cnt3 << "\n";
 
 	return ret;
 }
@@ -143,7 +130,7 @@ int UxbusCmd::set_nint32(int funcode, int *datas, int num) {
 	return ret;
 }
 
-int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) { // 2 times
+int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) {
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char datas[num * 4] = {0};
 	unsigned char *datas = new unsigned char[num * 4];
@@ -207,17 +194,14 @@ int UxbusCmd::set_nfp32_with_bytes(int funcode, float *datas, int num, char *add
  * controler setting
  *******************************************************/
 int UxbusCmd::get_version(unsigned char rx_data[40]) {
-    std::cout << "get_version\n";
 	return get_nu8(UXBUS_RG::GET_VERSION, rx_data, 40);
 }
 
 int UxbusCmd::get_robot_sn(unsigned char rx_data[40]) {
-    std::cout << "get_robot_sn\n";
 	return get_nu8(UXBUS_RG::GET_ROBOT_SN, rx_data, 40);
 }
 
 int UxbusCmd::check_verification(int *rx_data) {
-    std::cout << "check_verification\n";
 	return get_nu8(UXBUS_RG::CHECK_VERIFY, rx_data, 1);
 }
 
@@ -249,7 +233,6 @@ int UxbusCmd::load_traj(char filename[81]) {
 }
 
 int UxbusCmd::get_traj_rw_status(int *rx_data) {
-    std::cout << "get_traj_rw_status\n";
 	return get_nu8(UXBUS_RG::GET_TRAJ_RW_STATUS, rx_data, 1);
 }
 
@@ -269,13 +252,11 @@ int UxbusCmd::set_reduced_jointspeed(float jspd_rad) {
 }
 
 int UxbusCmd::get_reduced_mode(int *rx_data) {
-    std::cout << "get_reduced_mode\n";
 	return get_nu8(UXBUS_RG::GET_REDUCED_MODE, rx_data, 1);
 }
 
 int UxbusCmd::get_reduced_states(int *on, int xyz_list[6], float *tcp_speed, float *joint_speed, float jrange_rad[14], int *fense_is_on, int *collision_rebound_is_on, int length) {
 	//unsigned char rx_data[length] = {0};
-    std::cout << "get_reduced_states\n";
 	unsigned char *rx_data = new unsigned char[length];
 	int ret = get_nu8(UXBUS_RG::GET_REDUCED_STATE, rx_data, length);
 	*on = rx_data[0];
@@ -331,7 +312,6 @@ int UxbusCmd::set_state(int value) {
 }
 
 int UxbusCmd::get_state(int *rx_data) {
-    std::cout << "get_state\n";
 	return get_nu8(UXBUS_RG::GET_STATE, rx_data, 1);
 }
 
@@ -340,12 +320,10 @@ int UxbusCmd::get_cmdnum(int *rx_data) {
 }
 
 int UxbusCmd::get_err_code(int * rx_data) {
-    std::cout << "get_err_code\n";
 	return get_nu8(UXBUS_RG::GET_ERROR, rx_data, 2);
 }
 
 int UxbusCmd::get_hd_types(int *rx_data) {
-    std::cout << "get_hd_types\n";
 	return get_nu8(UXBUS_RG::GET_HD_TYPES, rx_data, 2);
 }
 
@@ -450,7 +428,6 @@ int UxbusCmd::set_servot(float jnt_taus[7]) {
 }
 
 int UxbusCmd::get_joint_tau(float jnt_taus[7]) {
-    std::cout << "get_joint_tau\n";
 	return get_nfp32(UXBUS_RG::GET_JOINT_TAU, jnt_taus, 7);
 }
 
@@ -460,7 +437,6 @@ int UxbusCmd::set_safe_level(int level) {
 }
 
 int UxbusCmd::get_safe_level(int *level) {
-    std::cout << "get_safe_level\n";
 	return get_nu8(UXBUS_RG::GET_SAFE_LEVEL, level, 1);
 }
 
@@ -534,12 +510,10 @@ int UxbusCmd::save_conf() {
 }
 
 int UxbusCmd::get_tcp_pose(float pose[6]) {
-    std::cout << "get_tcp_pose\n";
 	return get_nfp32(UXBUS_RG::GET_TCP_POSE, pose, 6);
 }
 
 int UxbusCmd::get_joint_pose(float angles[7]) {
-    std::cout << "get_joint_pose\n";
 	return get_nfp32(UXBUS_RG::GET_JOINT_POS, angles, 7);
 }
 
@@ -643,7 +617,6 @@ int UxbusCmd::gripper_set_posspd(float speed) {
 }
 
 int UxbusCmd::gripper_get_errcode(int rx_data[2]) {
-    std::cout << "gripper_get_errcode\n";
 	return get_nu8(UXBUS_RG::TGPIO_ERR, rx_data, 2);
 }
 
@@ -884,7 +857,6 @@ int UxbusCmd::servo_set_zero(int id) {
 }
 
 int UxbusCmd::servo_get_dbmsg(int rx_data[16]) {
-    std::cout << "servo_get_dbmsg\n";
 	return get_nu8(UXBUS_RG::SERVO_DBMSG, rx_data, 16);
 }
 
@@ -1023,7 +995,6 @@ int UxbusCmd::cgpio_set_outfun(int num, int fun) {
 
 int UxbusCmd::cgpio_get_state(int *state, int *digit_io, float *analog, int *input_conf, int *output_conf) {
 	// unsigned char rx_data[34] = { 0 };
-    std::cout << "cgpio_get_state\n";
 	unsigned char *rx_data = new unsigned char[34];
 	int ret = get_nu8(UXBUS_RG::CGPIO_GET_STATE, rx_data, 34);
 
@@ -1060,7 +1031,6 @@ int UxbusCmd::get_pose_offset(float pose1[6], float pose2[6], float offset[6], i
 }
 
 int UxbusCmd::get_position_aa(float pose[6]) {
-    std::cout << "get_position_aa\n";
 	return get_nfp32(UXBUS_RG::GET_TCP_POSE_AA, pose, 6);
 }
 
