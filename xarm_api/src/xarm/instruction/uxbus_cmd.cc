@@ -9,6 +9,7 @@
 #include "xarm/instruction/servo3_config.h"
 #include "xarm/instruction/uxbus_cmd_config.h"
 #include "xarm/debug/debug_print.h"
+#include <iostream>
 
 static int BAUDRATES[13] = { 4800, 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600, 1000000, 1500000, 2000000, 2500000 };
 
@@ -109,10 +110,22 @@ int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
 	// unsigned char hexdata[num * 4] = {0};
 	unsigned char *hexdata = new unsigned char[num * 4];
 	nfp32_to_hex(datas, hexdata, num);
+
+    auto beforeSendXBus = std::chrono::high_resolution_clock::now();
 	int ret = send_xbus(funcode, hexdata, num * 4);
+    auto afterSendXBus = std::chrono::high_resolution_clock::now();
+    auto cnt = std::chrono::duration<double>(afterSendXBus - beforeSendXBus).count();
+	if(cnt > 0.004)
+        std::cout << "sendXBus delay too large: " << cnt << "\n";
+
 	delete hexdata;
 	if (0 != ret) { return UXBUS_STATE::ERR_NOTTCP; }
+    auto beforeSendPend = std::chrono::high_resolution_clock::now();
 	ret = send_pend(funcode, 0, UXBUS_CONF::SET_TIMEOUT, NULL);
+    auto afterSendPend = std::chrono::high_resolution_clock::now();
+    cnt = std::chrono::duration<double>(afterSendPend - beforeSendPend).count();
+    if(cnt > 0.004)
+        std::cout << "sendPend delay too large: " << cnt << "\n";
 
 	return ret;
 }
