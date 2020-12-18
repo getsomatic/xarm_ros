@@ -38,6 +38,7 @@ void UxbusCmd::close(void) {}
  *******************************************************/
 
 int UxbusCmd::set_nu8(int funcode, int *datas, int num) {
+    std::cout << "set_nu8\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char send_data[num];
 	unsigned char *send_data = new unsigned char[num];
@@ -66,6 +67,7 @@ int UxbusCmd::get_nu8(int funcode, int *rx_data, int num) {
 }
 
 int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) {
+    std::cout << "get_nu8\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	int ret = send_xbus(funcode, 0, 0);
 	if (ret != 0) { return UXBUS_STATE::ERR_NOTTCP; }
@@ -73,6 +75,7 @@ int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) {
 }
 
 int UxbusCmd::set_nu16(int funcode, int *datas, int num) {
+    std::cout << "set_nu16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char send_data[num * 2];
 	unsigned char *send_data = new unsigned char[num * 2];
@@ -87,6 +90,7 @@ int UxbusCmd::set_nu16(int funcode, int *datas, int num) {
 	return ret;
 }
 int UxbusCmd::get_nu16(int funcode, int *rx_data, int num) {
+    std::cout << "get_nu16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char datas[num * 2];
 	unsigned char *datas = new unsigned char[num * 2];
@@ -131,6 +135,7 @@ int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
 }
 
 int UxbusCmd::set_nint32(int funcode, int *datas, int num) {
+    std::cout << "set_nint32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char hexdata[num * 4] = {0};  \\??
 	unsigned char *hexdata = new unsigned char[num * 4];
@@ -144,6 +149,7 @@ int UxbusCmd::set_nint32(int funcode, int *datas, int num) {
 }
 
 int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) {
+    std::cout << "get_nfp32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char datas[num * 4] = {0};
 	unsigned char *datas = new unsigned char[num * 4];
@@ -159,6 +165,7 @@ int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) {
 }
 
 int UxbusCmd::swop_nfp32(int funcode, float tx_datas[], int txn, float *rx_data, int rxn) {
+    std::cout << "swop_nfp32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char hexdata[128] = { 0 };
 	unsigned char *hexdata = new unsigned char[128];
@@ -173,6 +180,7 @@ int UxbusCmd::swop_nfp32(int funcode, float tx_datas[], int txn, float *rx_data,
 }
 
 int UxbusCmd::is_nfp32(int funcode, float datas[], int txn, int *value) {
+    std::cout << "is_nfp32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char hexdata[txn * 4] = {0};
 	unsigned char *hexdata = new unsigned char[txn * 4];
@@ -191,6 +199,7 @@ int UxbusCmd::is_nfp32(int funcode, float datas[], int txn, int *value) {
 }
 
 int UxbusCmd::set_nfp32_with_bytes(int funcode, float *datas, int num, char *additional, int len) {
+    std::cout << "set_nfp32_with_bytes\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	unsigned char *hexdata = new unsigned char[num * 4 + len];
 	nfp32_to_hex(datas, hexdata, num);
@@ -874,6 +883,7 @@ int UxbusCmd::servo_get_dbmsg(int rx_data[16]) {
 }
 
 int UxbusCmd::servo_addr_w16(int id, int addr, float value) {
+    std::cout << "servo_addr_w16\n";
 	// unsigned char txdata[7];
 	std::lock_guard<std::mutex> locker(mutex_);
 	unsigned char *txdata = new unsigned char[7];
@@ -887,6 +897,7 @@ int UxbusCmd::servo_addr_w16(int id, int addr, float value) {
 }
 
 int UxbusCmd::servo_addr_r16(int id, int addr, float *value) {
+    std::cout << "servo_addr_r16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[3], rx_data[4];
 	unsigned char *txdata = new unsigned char[3];
@@ -902,6 +913,7 @@ int UxbusCmd::servo_addr_r16(int id, int addr, float *value) {
 }
 
 int UxbusCmd::servo_addr_w32(int id, int addr, float value) {
+    std::cout << "servo_addr_w32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[7];
 	unsigned char *txdata = new unsigned char[7];
@@ -915,6 +927,7 @@ int UxbusCmd::servo_addr_w32(int id, int addr, float value) {
 }
 
 int UxbusCmd::servo_addr_r32(int id, int addr, float *value) {
+    std::cout << "servo_addr_r32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[3], rx_data[4];
 	unsigned char *txdata = new unsigned char[3];
