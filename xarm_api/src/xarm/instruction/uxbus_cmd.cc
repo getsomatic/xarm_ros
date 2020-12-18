@@ -106,6 +106,7 @@ int UxbusCmd::get_nu16(int funcode, int *rx_data, int num) {
 }
 
 int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
+    auto beforeset_nfp32 = std::chrono::high_resolution_clock::now();
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char hexdata[num * 4] = {0};
 	unsigned char *hexdata = new unsigned char[num * 4];
@@ -115,7 +116,7 @@ int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
 	int ret = send_xbus(funcode, hexdata, num * 4);
     auto afterSendXBus = std::chrono::high_resolution_clock::now();
     auto cnt = std::chrono::duration<double>(afterSendXBus - beforeSendXBus).count();
-	if(cnt > 0.004)
+	if(cnt > 0.002)
         std::cout << "sendXBus delay too large: " << cnt << "\n";
 
 	delete hexdata;
@@ -124,8 +125,12 @@ int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
 	ret = send_pend(funcode, 0, UXBUS_CONF::SET_TIMEOUT, NULL);
     auto afterSendPend = std::chrono::high_resolution_clock::now();
     cnt = std::chrono::duration<double>(afterSendPend - beforeSendPend).count();
-    if(cnt > 0.004)
+    if(cnt > 0.002)
         std::cout << "sendPend delay too large: " << cnt << "\n";
+
+    auto afterset_nfp32 = std::chrono::high_resolution_clock::now();
+    cnt = std::chrono::duration<double>(afterset_nfp32 - beforeset_nfp32).count();
+    std::cout << "set_nfp32: " << cnt << "\n";
 
 	return ret;
 }
