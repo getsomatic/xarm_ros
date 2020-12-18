@@ -67,7 +67,7 @@ int UxbusCmdTcp::send_pend(int funcode, int num, int timeout, unsigned char *ret
       // print_hex(" 3", rx_data, num + 8 + 4);
       return ret;
     }
-    if((times%3) == 1) {
+    if((times%2) == 0) {
         std::cout << "send_pend wait\n";
     }
     usleep(1000);
