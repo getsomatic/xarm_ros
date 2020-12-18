@@ -38,7 +38,6 @@ void UxbusCmd::close(void) {}
  *******************************************************/
 
 int UxbusCmd::set_nu8(int funcode, int *datas, int num) {
-    std::cout << "set_nu8\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char send_data[num];
 	unsigned char *send_data = new unsigned char[num];
@@ -66,8 +65,7 @@ int UxbusCmd::get_nu8(int funcode, int *rx_data, int num) {
 	return ret;
 }
 
-int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) {
-    std::cout << "get_nu8\n";
+int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) { // 4 times
 	std::lock_guard<std::mutex> locker(mutex_);
 	int ret = send_xbus(funcode, 0, 0);
 	if (ret != 0) { return UXBUS_STATE::ERR_NOTTCP; }
@@ -75,7 +73,6 @@ int UxbusCmd::get_nu8(int funcode, unsigned char *rx_data, int num) {
 }
 
 int UxbusCmd::set_nu16(int funcode, int *datas, int num) {
-    std::cout << "set_nu16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char send_data[num * 2];
 	unsigned char *send_data = new unsigned char[num * 2];
@@ -90,7 +87,6 @@ int UxbusCmd::set_nu16(int funcode, int *datas, int num) {
 	return ret;
 }
 int UxbusCmd::get_nu16(int funcode, int *rx_data, int num) {
-    std::cout << "get_nu16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char datas[num * 2];
 	unsigned char *datas = new unsigned char[num * 2];
@@ -135,7 +131,6 @@ int UxbusCmd::set_nfp32(int funcode, float *datas, int num) {
 }
 
 int UxbusCmd::set_nint32(int funcode, int *datas, int num) {
-    std::cout << "set_nint32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char hexdata[num * 4] = {0};  \\??
 	unsigned char *hexdata = new unsigned char[num * 4];
@@ -148,8 +143,7 @@ int UxbusCmd::set_nint32(int funcode, int *datas, int num) {
 	return ret;
 }
 
-int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) {
-    std::cout << "get_nfp32\n";
+int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) { // 2 times
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char datas[num * 4] = {0};
 	unsigned char *datas = new unsigned char[num * 4];
@@ -165,7 +159,6 @@ int UxbusCmd::get_nfp32(int funcode, float *rx_data, int num) {
 }
 
 int UxbusCmd::swop_nfp32(int funcode, float tx_datas[], int txn, float *rx_data, int rxn) {
-    std::cout << "swop_nfp32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char hexdata[128] = { 0 };
 	unsigned char *hexdata = new unsigned char[128];
@@ -180,7 +173,6 @@ int UxbusCmd::swop_nfp32(int funcode, float tx_datas[], int txn, float *rx_data,
 }
 
 int UxbusCmd::is_nfp32(int funcode, float datas[], int txn, int *value) {
-    std::cout << "is_nfp32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	//unsigned char hexdata[txn * 4] = {0};
 	unsigned char *hexdata = new unsigned char[txn * 4];
@@ -199,7 +191,6 @@ int UxbusCmd::is_nfp32(int funcode, float datas[], int txn, int *value) {
 }
 
 int UxbusCmd::set_nfp32_with_bytes(int funcode, float *datas, int num, char *additional, int len) {
-    std::cout << "set_nfp32_with_bytes\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	unsigned char *hexdata = new unsigned char[num * 4 + len];
 	nfp32_to_hex(datas, hexdata, num);
@@ -216,14 +207,17 @@ int UxbusCmd::set_nfp32_with_bytes(int funcode, float *datas, int num, char *add
  * controler setting
  *******************************************************/
 int UxbusCmd::get_version(unsigned char rx_data[40]) {
+    std::cout << "get_version\n";
 	return get_nu8(UXBUS_RG::GET_VERSION, rx_data, 40);
 }
 
 int UxbusCmd::get_robot_sn(unsigned char rx_data[40]) {
+    std::cout << "get_robot_sn\n";
 	return get_nu8(UXBUS_RG::GET_ROBOT_SN, rx_data, 40);
 }
 
 int UxbusCmd::check_verification(int *rx_data) {
+    std::cout << "check_verification\n";
 	return get_nu8(UXBUS_RG::CHECK_VERIFY, rx_data, 1);
 }
 
@@ -255,6 +249,7 @@ int UxbusCmd::load_traj(char filename[81]) {
 }
 
 int UxbusCmd::get_traj_rw_status(int *rx_data) {
+    std::cout << "get_traj_rw_status\n";
 	return get_nu8(UXBUS_RG::GET_TRAJ_RW_STATUS, rx_data, 1);
 }
 
@@ -274,11 +269,13 @@ int UxbusCmd::set_reduced_jointspeed(float jspd_rad) {
 }
 
 int UxbusCmd::get_reduced_mode(int *rx_data) {
+    std::cout << "get_reduced_mode\n";
 	return get_nu8(UXBUS_RG::GET_REDUCED_MODE, rx_data, 1);
 }
 
 int UxbusCmd::get_reduced_states(int *on, int xyz_list[6], float *tcp_speed, float *joint_speed, float jrange_rad[14], int *fense_is_on, int *collision_rebound_is_on, int length) {
 	//unsigned char rx_data[length] = {0};
+    std::cout << "get_reduced_states\n";
 	unsigned char *rx_data = new unsigned char[length];
 	int ret = get_nu8(UXBUS_RG::GET_REDUCED_STATE, rx_data, length);
 	*on = rx_data[0];
@@ -334,6 +331,7 @@ int UxbusCmd::set_state(int value) {
 }
 
 int UxbusCmd::get_state(int *rx_data) {
+    std::cout << "get_state\n";
 	return get_nu8(UXBUS_RG::GET_STATE, rx_data, 1);
 }
 
@@ -342,10 +340,12 @@ int UxbusCmd::get_cmdnum(int *rx_data) {
 }
 
 int UxbusCmd::get_err_code(int * rx_data) {
+    std::cout << "get_err_code\n";
 	return get_nu8(UXBUS_RG::GET_ERROR, rx_data, 2);
 }
 
 int UxbusCmd::get_hd_types(int *rx_data) {
+    std::cout << "get_hd_types\n";
 	return get_nu8(UXBUS_RG::GET_HD_TYPES, rx_data, 2);
 }
 
@@ -450,6 +450,7 @@ int UxbusCmd::set_servot(float jnt_taus[7]) {
 }
 
 int UxbusCmd::get_joint_tau(float jnt_taus[7]) {
+    std::cout << "get_joint_tau\n";
 	return get_nfp32(UXBUS_RG::GET_JOINT_TAU, jnt_taus, 7);
 }
 
@@ -459,6 +460,7 @@ int UxbusCmd::set_safe_level(int level) {
 }
 
 int UxbusCmd::get_safe_level(int *level) {
+    std::cout << "get_safe_level\n";
 	return get_nu8(UXBUS_RG::GET_SAFE_LEVEL, level, 1);
 }
 
@@ -532,10 +534,12 @@ int UxbusCmd::save_conf() {
 }
 
 int UxbusCmd::get_tcp_pose(float pose[6]) {
+    std::cout << "get_tcp_pose\n";
 	return get_nfp32(UXBUS_RG::GET_TCP_POSE, pose, 6);
 }
 
 int UxbusCmd::get_joint_pose(float angles[7]) {
+    std::cout << "get_joint_pose\n";
 	return get_nfp32(UXBUS_RG::GET_JOINT_POS, angles, 7);
 }
 
@@ -639,6 +643,7 @@ int UxbusCmd::gripper_set_posspd(float speed) {
 }
 
 int UxbusCmd::gripper_get_errcode(int rx_data[2]) {
+    std::cout << "gripper_get_errcode\n";
 	return get_nu8(UXBUS_RG::TGPIO_ERR, rx_data, 2);
 }
 
@@ -879,11 +884,11 @@ int UxbusCmd::servo_set_zero(int id) {
 }
 
 int UxbusCmd::servo_get_dbmsg(int rx_data[16]) {
+    std::cout << "servo_get_dbmsg\n";
 	return get_nu8(UXBUS_RG::SERVO_DBMSG, rx_data, 16);
 }
 
 int UxbusCmd::servo_addr_w16(int id, int addr, float value) {
-    std::cout << "servo_addr_w16\n";
 	// unsigned char txdata[7];
 	std::lock_guard<std::mutex> locker(mutex_);
 	unsigned char *txdata = new unsigned char[7];
@@ -897,7 +902,6 @@ int UxbusCmd::servo_addr_w16(int id, int addr, float value) {
 }
 
 int UxbusCmd::servo_addr_r16(int id, int addr, float *value) {
-    std::cout << "servo_addr_r16\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[3], rx_data[4];
 	unsigned char *txdata = new unsigned char[3];
@@ -913,7 +917,6 @@ int UxbusCmd::servo_addr_r16(int id, int addr, float *value) {
 }
 
 int UxbusCmd::servo_addr_w32(int id, int addr, float value) {
-    std::cout << "servo_addr_w32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[7];
 	unsigned char *txdata = new unsigned char[7];
@@ -927,7 +930,6 @@ int UxbusCmd::servo_addr_w32(int id, int addr, float value) {
 }
 
 int UxbusCmd::servo_addr_r32(int id, int addr, float *value) {
-    std::cout << "servo_addr_r32\n";
 	std::lock_guard<std::mutex> locker(mutex_);
 	// unsigned char txdata[3], rx_data[4];
 	unsigned char *txdata = new unsigned char[3];
@@ -1021,6 +1023,7 @@ int UxbusCmd::cgpio_set_outfun(int num, int fun) {
 
 int UxbusCmd::cgpio_get_state(int *state, int *digit_io, float *analog, int *input_conf, int *output_conf) {
 	// unsigned char rx_data[34] = { 0 };
+    std::cout << "cgpio_get_state\n";
 	unsigned char *rx_data = new unsigned char[34];
 	int ret = get_nu8(UXBUS_RG::CGPIO_GET_STATE, rx_data, 34);
 
@@ -1057,6 +1060,7 @@ int UxbusCmd::get_pose_offset(float pose1[6], float pose2[6], float offset[6], i
 }
 
 int UxbusCmd::get_position_aa(float pose[6]) {
+    std::cout << "get_position_aa\n";
 	return get_nfp32(UXBUS_RG::GET_TCP_POSE_AA, pose, 6);
 }
 
