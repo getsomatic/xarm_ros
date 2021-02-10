@@ -63,10 +63,10 @@ namespace xarm_api
 
         this->declare_parameter("dof");
          if (!this->get_parameter("dof", dof_)) {
-             RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
+             RCLCPP_ERROR(get_logger(), "Failed to get parameter DOF. Shutting down...");
              assert(false);
          } else {
-             RCLCPP_INFO(log_, "DOF set to %d", dof_);
+             RCLCPP_INFO(get_logger(), "DOF set to %d", dof_);
          }
          // If you dont want to set DOF - you can use this line so it will be 7
         //this->get_parameter_or("portName", dof_, 7);
@@ -78,7 +78,7 @@ namespace xarm_api
         // ReportDataNorm norm_data_;
         arm_cmd_ = connect_tcp_control(server_ip);
         if (arm_cmd_ == NULL)
-            RCLCPP_ERROR(log_, "Xarm Connection Failed!");
+            RCLCPP_ERROR(get_logger(), "Xarm Connection Failed!");
         else // clear unimportant errors
         {
             // thread_id_ = thread_init(cmd_heart_beat, this); // heartbeat related
@@ -90,7 +90,7 @@ namespace xarm_api
                 if((dbg_msg[i*2]==1)&&(dbg_msg[i*2+1]==40))
                 {
                     arm_cmd_->clean_err();
-                    RCLCPP_WARN(log_, "Cleared low-voltage error of joint %d", i+1);
+                    RCLCPP_WARN(get_logger(), "Cleared low-voltage error of joint %d", i+1);
                 }
             }
 
@@ -445,7 +445,7 @@ namespace xarm_api
     
     void XARMDriver::pub_joint_state(sensor_msgs::msg::JointState js_msg)
     {
-        //RCLCPP_INFO(log_, "Joints J1=%lf, J2=%lf, J3=%lf, J4=%lf, J5=%lf, J6=%lf, J7=%lf", js_msg.position[0], js_msg.position[1], js_msg.position[2], js_msg.position[3], js_msg.position[4], js_msg.position[5], js_msg.position[6]);
+        //RCLCPP_INFO(get_logger(), "Joints J1=%lf, J2=%lf, J3=%lf, J4=%lf, J5=%lf, J6=%lf, J7=%lf", js_msg.position[0], js_msg.position[1], js_msg.position[2], js_msg.position[3], js_msg.position[4], js_msg.position[5], js_msg.position[6]);
         joint_state_->publish(js_msg);
     }
 
