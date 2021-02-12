@@ -69,7 +69,7 @@ class XARMDriver : public rclcpp::Node
             unsigned char rx_data_[1280];
             std::string ip;
             pthread_t thread_id_;
-            int dof_;
+            int dof_ = 7;
             xarm_msgs::msg::IOState io_msg;
 
             rclcpp::Service<xarm_msgs::srv::Move>::SharedPtr go_home_server_;

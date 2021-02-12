@@ -82,11 +82,17 @@ target_link_libraries(example1_report_norm_node ${PROJECT_NAME})
 add_executable(xarm_driver_node src/xarm_driver_node.cpp src/xarm_driver.cpp )
 target_link_libraries(xarm_driver_node ${PROJECT_NAME})
 
+add_executable(xarm_client_node src/xarm_ros_client_node.cpp)
+target_link_libraries(xarm_client_node ${PROJECT_NAME})
+
 install(DIRECTORY include/
         DESTINATION include)
 
+install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
+
 install(TARGETS
         xarm_driver_node
+        xarm_client_node
         DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)

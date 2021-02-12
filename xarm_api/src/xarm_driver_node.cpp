@@ -18,33 +18,33 @@ class XarmRTConnection : public rclcpp::Node
         XarmRTConnection(std::shared_ptr<xarm_api::XARMDriver> drv) : Node("XarmRTConnection")
         {
             char server_ip[20]={0};
-            std::string robot_ip = "192.168.1.121";
+            std::string robot_ip = "192.168.88.200";
 
-            this->declare_parameter("robot_ip");
+            /*this->declare_parameter("robot_ip");
             if (!this->get_parameter("robot_ip", robot_ip)) {
-                RCLCPP_ERROR(log_, "Failed to get parameter xarm_robot_ip. Shutting down...");
+                RCLCPP_ERROR(get_logger(), "Failed to get parameter xarm_robot_ip. Shutting down...");
                 assert(false);
             } else {
-                RCLCPP_INFO(log_, "Got IP %s", robot_ip.c_str());
-            }
+                RCLCPP_INFO(get_logger(), "Got IP %s", robot_ip.c_str());
+            }*/
 
             strcpy(server_ip, robot_ip.c_str());
 
-            this->declare_parameter("dof");
+            /*this->declare_parameter("dof");
             if (!this->get_parameter("dof", joint_num_)) {
-                RCLCPP_ERROR(log_, "Failed to get parameter DOF. Shutting down...");
+                RCLCPP_ERROR(get_logger(), "Failed to get parameter DOF. Shutting down...");
                 assert(false);
             } else {
-                RCLCPP_INFO(log_, "DOF set to %d", joint_num_);
-            }
+                RCLCPP_INFO(get_logger(), "DOF set to %d", joint_num_);
+            }*/
 
-            this->declare_parameter("joint_names");
+            /*this->declare_parameter("joint_names");
             if (!this->get_parameter("joint_names", joint_name_)) {
-                RCLCPP_ERROR(log_, "Failed to get parameter joint_names. Shutting down...");
+                RCLCPP_ERROR(get_logger(), "Failed to get parameter joint_names. Shutting down...");
                 assert(false);
             } else {
-                RCLCPP_INFO(log_, "Got joint names successfully");
-            }
+                RCLCPP_INFO(get_logger(), "Got joint names successfully");
+            }*/
             ip = server_ip;
             xarm_driver = drv;
             xarm_driver->XARMDriverInit(server_ip);
@@ -160,11 +160,10 @@ class XarmRTConnection : public rclcpp::Node
         std::shared_ptr<xarm_api::XARMDriver> xarm_driver;
         xarm_msgs::msg::RobotMsg rm_msg;
 
-        int joint_num_;
-        std::vector<std::string> joint_name_;
+        int joint_num_ = 7;
+        std::vector<std::string> joint_name_ = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6", "joint7"};
         constexpr static const double REPORT_RATE_HZ = 10; /* 10Hz, same with norm_report frequency */
         rclcpp::Clock clock_;
-        rclcpp::Logger log_ = rclcpp::get_logger("XarmRTConnection");
 };
 
 int main(int argc, char **argv)
