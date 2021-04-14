@@ -60,38 +60,11 @@ install(
         RUNTIME DESTINATION bin
         INCLUDES DESTINATION include
 )
-######################################################################
-
-add_library(xarm_ros_client SHARED
-  src/xarm_ros_client.cpp
-)
-
-ament_target_dependencies(xarm_ros_client
-        rclcpp
-        std_msgs
-        xarm_msgs
-        geometry_msgs
-        sensor_msgs
-        )
-
-ament_export_libraries(xarm_ros_client)
-#ament_export_dependencies(xarm_ros_client)
-
-install(
-        TARGETS xarm_ros_client
-        EXPORT export_xarm_ros_client
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
-)
 
 #########################################################################
 
 install(DIRECTORY include/
         DESTINATION include)
-
-install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_package()
