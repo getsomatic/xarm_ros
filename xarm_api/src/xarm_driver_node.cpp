@@ -5,9 +5,9 @@
  * Author: waylon <weile.wang@ufactory.cc>
  ============================================================================*/
 #include <xarm_driver.h>
-#include <xarm/linux/thread.h>
-#include "xarm/connect.h"
-#include "xarm/report_data.h"
+#include <xarm/core/os/bak/thread.h>
+#include "xarm/core/connect.h"
+#include "xarm/core/report_data.h"
 #include <memory>
 #include <chrono>
 #include <functional>

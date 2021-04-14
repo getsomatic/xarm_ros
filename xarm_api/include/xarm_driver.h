@@ -17,10 +17,10 @@
 #include <xarm_msgs/srv/gripper_move.hpp>
 #include <xarm_msgs/srv/gripper_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
-#include <xarm/common/data_type.h>
-#include <xarm/linux/thread.h>
-#include "xarm/connect.h"
-#include "xarm/report_data.h"
+#include <xarm/core/common/data_type.h>
+#include <xarm/core/os/bak/thread.h>
+#include "xarm/core/connect.h"
+#include "xarm/core/report_data.h"
 
 #include <memory>
 #include <chrono>

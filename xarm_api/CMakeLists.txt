@@ -9,6 +9,9 @@ find_package(xarm_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
 set(XARM_API_DIR src/xarm)
+set(XARM_CORE_API_DIR src/xarm/core)
+set(SERIAL_API_DIR src/serial)
+
 add_compile_options(-fPIC)
 
 include_directories(
@@ -16,18 +19,27 @@ include_directories(
 )
 
 add_library(${PROJECT_NAME} SHARED
-   ${XARM_API_DIR}/connect.cc
-   ${XARM_API_DIR}/report_data.cc
-   ${XARM_API_DIR}/common/crc16.cc
-   ${XARM_API_DIR}/common/queue_memcpy.cc
-   ${XARM_API_DIR}/debug/debug_print.cc
-   ${XARM_API_DIR}/instruction/uxbus_cmd.cc
-   ${XARM_API_DIR}/instruction/uxbus_cmd_ser.cc
-   ${XARM_API_DIR}/instruction/uxbus_cmd_tcp.cc
-   ${XARM_API_DIR}/linux/network.cc
-   ${XARM_API_DIR}/linux/thread.cc
-   ${XARM_API_DIR}/port/serial.cc
-   ${XARM_API_DIR}/port/socket.cc
+        ${XARM_CORE_API_DIR}/connect.cc
+        ${XARM_CORE_API_DIR}/report_data.cc
+
+        ${XARM_CORE_API_DIR}/common/crc16.cc
+        ${XARM_CORE_API_DIR}/common/queue_memcpy.cc
+
+        ${XARM_CORE_API_DIR}/debug/debug_print.cc
+
+        ${XARM_CORE_API_DIR}/instruction/uxbus_cmd.cc
+        ${XARM_CORE_API_DIR}/instruction/uxbus_cmd_ser.cc
+        ${XARM_CORE_API_DIR}/instruction/uxbus_cmd_tcp.cc
+
+        ${XARM_CORE_API_DIR}/os/network.cc
+
+        ${XARM_CORE_API_DIR}/port/ser.cc
+        ${XARM_CORE_API_DIR}/port/socket.cc
+
+        ${SERIAL_API_DIR}/serial.cc
+        ${SERIAL_API_DIR}/impl/unix.cc
+        ${SERIAL_API_DIR}/impl/win.cc
+        ${SERIAL_API_DIR}/impl/list_ports/list_ports_linux.cc
  )
 
 ament_target_dependencies(${PROJECT_NAME}
@@ -76,24 +88,10 @@ install(
 
 #########################################################################
 
-add_executable(example1_report_norm_node test/example1_report_norm.cc )
-target_link_libraries(example1_report_norm_node ${PROJECT_NAME})
-
-add_executable(xarm_driver_node src/xarm_driver_node.cpp src/xarm_driver.cpp )
-target_link_libraries(xarm_driver_node ${PROJECT_NAME})
-
-add_executable(xarm_client_node src/xarm_ros_client_node.cpp)
-target_link_libraries(xarm_client_node ${PROJECT_NAME})
-
 install(DIRECTORY include/
         DESTINATION include)
 
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME})
-
-install(TARGETS
-        xarm_driver_node
-        xarm_client_node
-        DESTINATION lib/${PROJECT_NAME})
 
 ament_export_include_directories(include)
 ament_package()
